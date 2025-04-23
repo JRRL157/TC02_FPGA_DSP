@@ -54,7 +54,7 @@ int main()
 
 	//Dual port RAM
 	peripheral perif;
-	
+
 	sock=socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) printf("Opening socket");
 
