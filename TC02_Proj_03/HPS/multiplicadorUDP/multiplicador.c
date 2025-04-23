@@ -1,7 +1,6 @@
 /*
-* FUNCAO : Testar Comunicacao UDP
+* FUNCAO : Comunicação UDP e Multiplicador
 * PROJETO: TOPICOS EM COMUNICAO 02
-* DATA DE CRIACAO: 26/03/2025
 */
 
 
