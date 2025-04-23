@@ -328,20 +328,39 @@ soc_system u0 (
 	wire dp_ram_rst;
 	wire [31:0] dp_ram_writedata, dp_ram_readdata;
 	
-	wire [3:0] A, B;
+	wire [3:0] A_w, B_w;
 	wire [7:0] res;
 	wire [3:0] state;
 	wire mult_done;
 	
 	wire [7:0] hex0_w, hex1_w, hex2_w, hex3_w, hex4_w, hex5_w;
 
-	four_bit_multiplier mult(.clk(CLOCK_50), .rst(SW[0]), .ena(SW[9]), .A(A), .B(B), .Y(res), .done(mult_done), .state(state));
+	four_bit_multiplier mult(
+    .clk(CLOCK_50),
+    .rst(SW[0]), 
+    .ena(SW[9]), 
+    .A(A_w), 
+    .B(B_w), 
+    .Y(res), 
+    .done(mult_done), 
+    .state(state)
+  );
 
-	SEG7_LUT d0(.in(A), .dot(1'b0), .out(hex0_w));
-	SEG7_LUT d1(.in(B), .dot(1'b0), .out(hex1_w));
+	SEG7_LUT d0(.in(A_w), .dot(1'b0), .out(hex0_w));
+	SEG7_LUT d1(.in(B_w), .dot(1'b0), .out(hex1_w));
 	SEG7_LUT d2(.in(state), .dot(1'b1), .out(hex2_w));
 
-	dp_ram_controller controller(.CLK(CLOCK_50), .WRITE_F(dp_ram_write), .ADDR(dp_ram_addr), .READ_DATA(dp_ram_readdata), .WRITE_DATA(dp_ram_writedata), .RESET(dp_ram_rst), .done(mult_done));
+	dp_ram_controller controller(
+    .CLK(CLOCK_50), 
+    .WRITE_F(dp_ram_write),
+    .ADDR(dp_ram_addr), 
+    .READ_DATA(dp_ram_readdata), 
+    .WRITE_DATA(dp_ram_writedata), 
+    .RESET(dp_ram_rst),
+    .A(A_w),
+    .B(B_w),
+    .done(mult_done)
+  );
 
 	assign HEX0 = hex0_w;
 	assign HEX1 = hex1_w;
