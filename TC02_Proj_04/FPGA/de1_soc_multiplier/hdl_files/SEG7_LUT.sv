@@ -4,7 +4,7 @@ module SEG7_LUT(
 	output reg [7:0] out
 );
 
-	always @(in)
+	always @(in, dot)
 	begin
 			out[7] = ~dot;
 			case(in)

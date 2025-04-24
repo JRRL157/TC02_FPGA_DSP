@@ -17,36 +17,31 @@ module dp_ram_controller(
 
 	always @(*) begin
 		case (state)
-			ST_IDLE_RAM_CONTROLLER: 
-			begin			
+			ST_IDLE_RAM_CONTROLLER: begin			
 				next_state = READ_DATA[0] == 1'b1 ? ST_WAIT_READ : ST_IDLE_RAM_CONTROLLER;
 			end
-			ST_WAIT_READ:
-			begin
+			ST_WAIT_READ: begin
 				next_state = ST_READ_INPUT;
 			end
-			ST_READ_INPUT:
-			begin
+			ST_READ_INPUT: begin
 				next_state = ST_WAIT_OPERATION;
 			end
-			ST_WAIT_OPERATION:
-			begin
+			ST_WAIT_OPERATION: begin
 				next_state = done == 1'b1 ? ST_WRITE_OUTPUT : ST_WAIT_OPERATION;
 			end
-			ST_WRITE_OUTPUT:
-			begin
+			ST_WRITE_OUTPUT: begin
+				next_state = ST_WAIT_FINISH;
+			end
+			ST_WAIT_FINISH: begin
 				next_state = ST_SET_FINISH;
 			end
-			ST_SET_FINISH:
-			begin
+			ST_SET_FINISH: begin
 				next_state = ST_WAIT_SHUTDOWN;
 			end
-			ST_WAIT_SHUTDOWN:
-			begin
+			ST_WAIT_SHUTDOWN: begin
 				next_state = READ_DATA[9] == 1'b0 ? ST_WAIT_SHUTDOWN : ST_CLEAR;
 			end
-			ST_CLEAR:
-			begin
+			ST_CLEAR: begin
 				next_state = ST_IDLE_RAM_CONTROLLER;
 			end
 		endcase
@@ -56,7 +51,12 @@ module dp_ram_controller(
 		state <= RESET == 1'b0 ? ST_IDLE_RAM_CONTROLLER : next_state;
 	end
 
-	always @(state) begin
+	always @(state,READ_DATA, Y) begin
+		A = 4'd0;
+		B = 4'd0;
+		WRITE_F = 1'b0;
+		ADDR = ST_READ_INPUT;
+		WRITE_DATA = 32'hXXXX_XXXX;		
 		case(state)
 			ST_IDLE_RAM_CONTROLLER: begin
 				A = 4'd0;
@@ -76,8 +76,7 @@ module dp_ram_controller(
 			end
 			ST_WAIT_OPERATION: begin
 				WRITE_F = 1'b1;
-				ADDR = DATA_OUT;
-				WRITE_DATA[7:0] = 8'hXX;
+				ADDR = DATA_OUT;				
 			end
 			ST_WRITE_OUTPUT: begin
 				WRITE_DATA = Y;
