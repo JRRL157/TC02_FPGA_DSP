@@ -20,35 +20,40 @@ module four_bit_multiplier(
         .state_o(curr_state)
     );
     
-    always @(*) begin
-        case(curr_state)
+    always @(curr_state) begin
+        A_reg = 8'b0;
+		  B_reg = 8'b0;
+		  Y = 8'b0;
+		  prod = '{default: 8'd0};
+		  done = 1'b0;
+		  case(curr_state)
             ST_IDLE: begin
-                A_reg <= {4'b0, A};
-                B_reg <= {4'b0, B};
-                done <= 1'b0;
+                A_reg = {4'b0, A};
+                B_reg = {4'b0, B};
+                done = 1'b0;
             end
             ST_COMPUTE_PROD0: begin
-                prod[0] <= B_reg[0] ? A_reg : 8'b0;
-                done <= 1'b0;
+                prod[0] = B_reg[0] ? A_reg : 8'b0;
+                done = 1'b0;
             end
             ST_COMPUTE_PROD1:
             begin
-                prod[1] <= B_reg[1] ? A_reg : 8'b0;
-                done <= 1'b0;
+                prod[1] = B_reg[1] ? A_reg : 8'b0;
+                done = 1'b0;
             end
             ST_COMPUTE_PROD2:
             begin
-                prod[2] <= B_reg[2] ? A_reg : 8'b0;
-                done <= 1'b0;
+                prod[2] = B_reg[2] ? A_reg : 8'b0;
+                done = 1'b0;
             end
             ST_COMPUTE_PROD3:
             begin
-                prod[3] <= B_reg[3] ? A_reg : 8'b0;
-                done <= 1'b0;
+                prod[3] = B_reg[3] ? A_reg : 8'b0;
+                done = 1'b0;
             end
             ST_END:
             begin
-                Y <= prod[0] + (prod[1] << 1) + (prod[2] << 2) + (prod[3] << 3);
+                Y = prod[0] + (prod[1] << 1) + (prod[2] << 2) + (prod[3] << 3);
 					 done <= 1'b1;
             end
         endcase
