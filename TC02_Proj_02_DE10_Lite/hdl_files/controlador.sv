@@ -5,8 +5,7 @@ module controlador
     input          clk_i,
     input          rst_i,
     input          strt_cmpt_i,
-    output [ 2:0]  state_o,
-	 output [2:0] next_state_o
+    output [ 2:0]  state_o
 );
 
 // INTERNAL SIGNALS ################################
@@ -79,5 +78,4 @@ assign state_o = state;
         endcase
     end
 
-	 assign next_state_o = next_state;
 endmodule

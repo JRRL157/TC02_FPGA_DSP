@@ -24,8 +24,7 @@ module four_bit_multiplier(
         .clk_i(clk),
         .rst_i(rst),
         .strt_cmpt_i(ena),
-        .state_o(curr_state),
-		  .next_state_o()
+        .state_o(curr_state)
     );
 
 	 always @(posedge clk) begin
