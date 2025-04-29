@@ -1,7 +1,8 @@
 `include "./hdl_files/dp_ram_controller_states_defines.sv"
 
 module dp_ram_controller(
-	input CLK, RESET,
+	input CLK,
+	input rst,
 	output [3:0] ADDR,
 	output WRITE_F,
 	output [31:0] WRITE_DATA,
@@ -9,16 +10,21 @@ module dp_ram_controller(
 	output [3:0] BYTE_ENABLE,
 	output [3:0] A, B,
 	input done,
-	input [7:0] Y
+	input [7:0] Y,
+	output ena,
+	output [3:0] state_o
 );
 
-	parameter CONTROL = 2'b00, DATA_IN = 2'b01, DATA_OUT = 2'b10, STATUS = 2'b11;
+	parameter CONTROL = 4'h0, DATA_IN = 4'h1, DATA_OUT = 4'h2, STATUS = 4'h3;
 	reg [3:0] state, next_state;
 
+	assign crlt0_w = (state == ST_IDLE_RAM_CONTROLLER) ? READ_DATA[0]:
+						  (state == ST_WAIT_SHUTDOWN) ? READ_DATA[0]: ena;
+	
 	always @(*) begin
 		case (state)
 			ST_IDLE_RAM_CONTROLLER: begin			
-				next_state = READ_DATA[0] == 1'b1 ? ST_WAIT_READ : ST_IDLE_RAM_CONTROLLER;
+				next_state = crlt0_w ? ST_WAIT_READ : ST_IDLE_RAM_CONTROLLER;
 			end
 			ST_WAIT_READ: begin
 				next_state = ST_READ_INPUT;
@@ -39,7 +45,7 @@ module dp_ram_controller(
 				next_state = ST_WAIT_SHUTDOWN;
 			end
 			ST_WAIT_SHUTDOWN: begin
-				next_state = READ_DATA[9] == 1'b0 ? ST_WAIT_SHUTDOWN : ST_CLEAR;
+				next_state = crlt0_w ? ST_WAIT_SHUTDOWN : ST_CLEAR;
 			end
 			ST_CLEAR: begin
 				next_state = ST_IDLE_RAM_CONTROLLER;
@@ -48,55 +54,86 @@ module dp_ram_controller(
 	end
 	
 	always @(posedge CLK) begin		
-		state <= RESET == 1'b0 ? ST_IDLE_RAM_CONTROLLER : next_state;
+		state <= rst == 1'b0 ? ST_IDLE_RAM_CONTROLLER : next_state;
 	end
 
-	always @(state,READ_DATA, Y) begin
-		A = 4'd0;
-		B = 4'd0;
-		WRITE_F = 1'b0;
-		ADDR = ST_READ_INPUT;
-		WRITE_DATA = 32'hXXXX_XXXX;		
+	always @(state, READ_DATA, done, Y) begin
 		case(state)
 			ST_IDLE_RAM_CONTROLLER: begin
-				A = 4'd0;
-				B = 4'd0;
+            A = 4'hX;  
+            B = 4'hX;
+				WRITE_DATA= 32'hXXXX;
 				WRITE_F = 1'b0;
+				ADDR = CONTROL;
+				ena = 1'b0;
 			end 
 			ST_WAIT_READ: begin
-				A = 4'd0;
-				B = 4'd0;
+            A = 4'hX;  
+            B = 4'hX;
+				WRITE_DATA= 32'hXXXX;
 				WRITE_F = 1'b0;
-				ADDR = ST_READ_INPUT;
+				ADDR = DATA_IN;
+				ena = 1'b0;
 			end
 			ST_READ_INPUT: begin
-				A = READ_DATA[4:1];
-				B = READ_DATA[8:5];
+				A = READ_DATA[3:0];
+				B = READ_DATA[7:4];
+				ADDR = DATA_IN;
+				WRITE_DATA= 32'hXXXX;
 				WRITE_F = 1'b0;
+				ena = 1'b0;
 			end
 			ST_WAIT_OPERATION: begin
 				WRITE_F = 1'b1;
-				ADDR = DATA_OUT;				
+				A = READ_DATA[3:0];
+				B = READ_DATA[7:4];
+				WRITE_DATA= 32'hXXXX;
+				ADDR = DATA_IN;
+				ena = 1'b1;
 			end
 			ST_WRITE_OUTPUT: begin
-				WRITE_DATA = Y;
+				WRITE_F = 1'b1;
+				WRITE_DATA = {24'h0,Y};
+				ADDR = DATA_OUT;
+				A = 4'hX;  
+            B = 4'hX;
+				ena = 1'b1;
 			end
 			ST_WAIT_FINISH: begin
+				A = 4'hX;  
+            B = 4'hX;
 				ADDR = STATUS;
-				WRITE_F = 1'b1;
+				WRITE_F = 1'b0;
+				WRITE_DATA = 32'h3;
+				ena = 1'b1;
 			end
 			ST_SET_FINISH: begin
-				WRITE_DATA = 1;
+				A = 4'hX;  
+            B = 4'hX;
+				WRITE_F = 1'b1;
 				ADDR = STATUS;
-				WRITE_DATA = 1;
+				WRITE_DATA = 32'h1;
+				ena = 1'b1;
 			end
 			ST_WAIT_SHUTDOWN: begin
+				A = 4'hX;
+            B = 4'hX;
+				ADDR = CONTROL;
 				WRITE_F = 1'b0;
+				WRITE_DATA= 32'hXXXX;
+				ena = READ_DATA[0];
 			end
 			ST_CLEAR: begin
-				WRITE_F = 1'b0;
+				A = 4'hX;  
+            B = 4'hX;
+				ADDR = STATUS;
+				WRITE_F = 1'b1;
+				WRITE_DATA= 32'h0;
+				ena = 1'b0;
 			end
 		endcase
 	end
+	
+	assign state_o = state;
 
 endmodule
