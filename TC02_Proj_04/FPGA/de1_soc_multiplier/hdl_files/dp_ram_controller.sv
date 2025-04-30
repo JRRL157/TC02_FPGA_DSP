@@ -17,10 +17,8 @@ module dp_ram_controller(
 
 	parameter CONTROL = 4'h0, DATA_IN = 4'h1, DATA_OUT = 4'h2, STATUS = 4'h3;
 	reg [3:0] state, next_state;
+	reg crlt0_w;
 
-	assign crlt0_w = (state == ST_IDLE_RAM_CONTROLLER) ? READ_DATA[0]:
-						  (state == ST_WAIT_SHUTDOWN) ? READ_DATA[0]: ena;
-	
 	always @(*) begin
 		case (state)
 			ST_IDLE_RAM_CONTROLLER: begin			
@@ -36,6 +34,9 @@ module dp_ram_controller(
 				next_state = done == 1'b1 ? ST_WRITE_OUTPUT : ST_WAIT_OPERATION;
 			end
 			ST_WRITE_OUTPUT: begin
+				next_state = ST_WAIT_WRITE_OUTPUT;
+			end
+			ST_WAIT_WRITE_OUTPUT: begin
 				next_state = ST_WAIT_FINISH;
 			end
 			ST_WAIT_FINISH: begin
@@ -52,9 +53,14 @@ module dp_ram_controller(
 			end
 		endcase
 	end
-	
-	always @(posedge CLK) begin		
-		state <= rst == 1'b0 ? ST_IDLE_RAM_CONTROLLER : next_state;
+
+	always @(posedge CLK) begin
+		if(rst == 1'b0) begin
+			state <= ST_IDLE_RAM_CONTROLLER;
+		end
+		else begin
+			state <= next_state;
+		end
 	end
 
 	always @(state, READ_DATA, done, Y) begin
@@ -84,7 +90,7 @@ module dp_ram_controller(
 				ena = 1'b0;
 			end
 			ST_WAIT_OPERATION: begin
-				WRITE_F = 1'b1;
+				WRITE_F = 1'b0;
 				A = READ_DATA[3:0];
 				B = READ_DATA[7:4];
 				WRITE_DATA= 32'hXXXX;
@@ -92,10 +98,18 @@ module dp_ram_controller(
 				ena = 1'b1;
 			end
 			ST_WRITE_OUTPUT: begin
-				WRITE_F = 1'b1;
+				WRITE_F = 1'b0;
 				WRITE_DATA = {24'h0,Y};
 				ADDR = DATA_OUT;
 				A = 4'hX;  
+            B = 4'hX;
+				ena = 1'b1;
+			end
+			ST_WAIT_WRITE_OUTPUT: begin
+				WRITE_F = 1'b1;
+				WRITE_DATA = {24'h0,Y};
+				ADDR = DATA_OUT;
+				A = 4'hX;
             B = 4'hX;
 				ena = 1'b1;
 			end
@@ -104,7 +118,7 @@ module dp_ram_controller(
             B = 4'hX;
 				ADDR = STATUS;
 				WRITE_F = 1'b0;
-				WRITE_DATA = 32'h3;
+				WRITE_DATA = 32'h1;
 				ena = 1'b1;
 			end
 			ST_SET_FINISH: begin
@@ -120,7 +134,7 @@ module dp_ram_controller(
             B = 4'hX;
 				ADDR = CONTROL;
 				WRITE_F = 1'b0;
-				WRITE_DATA= 32'hXXXX;
+				WRITE_DATA= 32'h0;
 				ena = READ_DATA[0];
 			end
 			ST_CLEAR: begin
@@ -135,5 +149,5 @@ module dp_ram_controller(
 	end
 	
 	assign state_o = state;
-
+	assign crlt0_w = (state == ST_IDLE_RAM_CONTROLLER) ? READ_DATA[0] : (state == ST_WAIT_SHUTDOWN) ? READ_DATA[0] : ena;
 endmodule

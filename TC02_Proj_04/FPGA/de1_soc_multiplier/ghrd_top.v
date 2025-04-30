@@ -317,28 +317,29 @@ soc_system u0 (
 		  .testeram_s2_write                     (dp_ram_write),                     //                               .write
 		  .testeram_s2_readdata                  (dp_ram_readdata),                  //                               .readdata
 		  .testeram_s2_writedata                 (dp_ram_writedata),                 //                               .writedata
-		  .testeram_s2_byteenable                (8'hFF),                //                               .byteenable
+		  .testeram_s2_byteenable                (4'b1111),                //                               .byteenable
 		  .testeram_clk2_clk                     (CLOCK_50),                     //                  testeram_clk2.clk
-		  .testeram_reset2_reset                 (dp_ram_rst),                 //                testeram_reset2.reset
-		  .testeram_reset2_reset_req             ()              //                               .reset_req
+		  .testeram_reset2_reset                 (hps_fpga_reset_n),                 //                testeram_reset2.reset
+		  //.testeram_reset2_reset_req             ()              //                               .reset_req
     );
 
-	wire [4:0] dp_ram_addr;
+	wire [3:0] dp_ram_addr;
 	wire dp_ram_write;
-	wire dp_ram_rst;
+	wire [3:0] dp_ram_state;
 	wire [31:0] dp_ram_writedata, dp_ram_readdata;
 	
 	wire [3:0] A_w, B_w;
 	wire [7:0] res;
 	wire [3:0] state;
+	wire enable;
 	wire mult_done;
 	
 	wire [7:0] hex0_w, hex1_w, hex2_w, hex3_w, hex4_w, hex5_w;
 
 	four_bit_multiplier mult(
     .clk(CLOCK_50),
-    .rst(SW[0]), 
-    .ena(SW[9]), 
+    .rst(hps_fpga_reset_n), 
+    .ena(enable), 
     .A(A_w), 
     .B(B_w), 
     .Y(res), 
@@ -349,22 +350,29 @@ soc_system u0 (
 	SEG7_LUT d0(.in(A_w), .dot(1'b0), .out(hex0_w));
 	SEG7_LUT d1(.in(B_w), .dot(1'b0), .out(hex1_w));
 	SEG7_LUT d2(.in(state), .dot(1'b1), .out(hex2_w));
+	SEG7_LUT d3(.in(dp_ram_state), .dot(1'b1), .out(hex3_w));
+	SEG7_LUT d4(.in(res[3:0]), .dot(1'b0), .out(hex4_w));
+	SEG7_LUT d5(.in(res[7:4]), .dot(1'b0), .out(hex5_w));
 
 	dp_ram_controller controller(
-    .CLK(CLOCK_50), 
+    .CLK(CLOCK_50),
+	 .rst(hps_fpga_reset_n),
     .WRITE_F(dp_ram_write),
     .ADDR(dp_ram_addr), 
     .READ_DATA(dp_ram_readdata), 
     .WRITE_DATA(dp_ram_writedata), 
-    .RESET(dp_ram_rst),
+    .ena(enable),
     .A(A_w),
     .B(B_w),
-    .done(mult_done)
+    .done(mult_done),
+	 .state_o(dp_ram_state)
   );
 
 	assign HEX0 = hex0_w;
 	assign HEX1 = hex1_w;
 	assign HEX2 = hex2_w;
-	assign HEX3 = 8'hFF;
+	assign HEX3 = hex3_w;
+	assign HEX4 = hex4_w;
+	assign HEX5 = hex5_w;
 
 endmodule
