@@ -3,6 +3,9 @@ ll HDL files
 # *.v
 
 # ignore Quartus II generated files
+*.map.*
+*.cmp.*
+*.cnf*
 *_generation_script*
 *_inst.vhd
 *.bak
@@ -15,17 +18,14 @@ ll HDL files
 *.jpg
 *.mif
 *.pin
-*.pof
 *.ptf.*
 *.qar
 *.qarlog
 *.qws
 *.rpt
 *.smsg
-*.sof
 *.sopc_builder
 *.summary
-*.tcl
 *.txt # Explicitly add any text files used
 *~
 *example*
