@@ -71,35 +71,26 @@ module four_bit_multiplier(
             end
             ST_COMPUTE_PROD0: begin
                 next_prod[0] = B_reg[0] ? A_reg : 8'b0;
-                next_done = 1'b0;
-					 next_Y = 8'b0;
 					 next_state = ST_COMPUTE_PROD1;
             end
             ST_COMPUTE_PROD1:
             begin
-                next_prod[1] = B_reg[1] ? A_reg : 8'b0;
-                next_done = 1'b0;
-					 next_Y = 8'b0;
+                next_prod[1] = B_reg[1] ? (A_reg << 1) : 8'b0;
 					 next_state = ST_COMPUTE_PROD2;
             end
-            ST_COMPUTE_PROD2:
-            begin
-                next_prod[2] = B_reg[2] ? A_reg : 8'b0;
-                next_done = 1'b0;
-					 next_Y = 8'b0;
+            ST_COMPUTE_PROD2: begin
+                next_prod[2] = B_reg[2] ? (A_reg << 2) : 8'b0; // Shift left by 2
 					 next_state = ST_COMPUTE_PROD3;
             end
             ST_COMPUTE_PROD3:
             begin
-                next_prod[3] = B_reg[3] ? A_reg : 8'b0;
-                next_done = 1'b0;
-					 next_Y = 8'b0;
+                next_prod[3] = B_reg[3] ? (A_reg << 3) : 8'b0;
 					 next_state = ST_END;
             end
             ST_END:
             begin                
 					 next_done = 1'b1;
-					 next_Y = prod[0] + (prod[1] << 1) + (prod[2] << 2) + (prod[3] << 3);
+					 next_Y = next_prod[0] + next_prod[1] + next_prod[2] + next_prod[3];
 					 next_state = ST_IDLE;
             end
 				default:
