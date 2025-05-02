@@ -99,7 +99,7 @@ module four_bit_multiplier(
             ST_END:
             begin                
 					 next_done = 1'b1;
-					 next_Y = prod[0] + (prod[1] << 1) + (prod[2] << 2) + (prod[3] << 3);
+					 next_Y = next_prod[0] + (next_prod[1] << 1) + (next_prod[2] << 2) + (next_prod[3] << 3);
 					 next_state = ST_IDLE;
             end
 				default:
