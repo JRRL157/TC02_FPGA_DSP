@@ -218,7 +218,7 @@ module ghrd_top(
 //=======================================================
 soc_system u0 (      
 		  .clk_clk                               (CLOCK_50),                             //                clk.clk
-		  .reset_reset_n                         (1'b1),                                 //                reset.reset_n
+		  .reset_reset_n                         (hps_fpga_reset_n),                                 //                reset.reset_n
 		  //HPS ddr3
 		  .memory_mem_a                          ( HPS_DDR3_ADDR),                       //                memory.mem_a
         .memory_mem_ba                         ( HPS_DDR3_BA),                         //                .mem_ba
@@ -317,13 +317,12 @@ soc_system u0 (
 		  .testeram_s2_write                     (dp_ram_write),                     //                               .write
 		  .testeram_s2_readdata                  (dp_ram_readdata),                  //                               .readdata
 		  .testeram_s2_writedata                 (dp_ram_writedata),                 //                               .writedata
-		  .testeram_s2_byteenable                (4'b1111),                //                               .byteenable
+		  .testeram_s2_byteenable                (dp_ram_byteenable),                //                               .byteenable
 		  .testeram_clk2_clk                     (CLOCK_50),                     //                  testeram_clk2.clk
 		  .testeram_reset2_reset                 (hps_fpga_reset_n),                 //                testeram_reset2.reset
-		  //.testeram_reset2_reset_req             ()              //                               .reset_req
     );
 
-	wire [3:0] dp_ram_addr;
+	wire [3:0] dp_ram_addr, dp_ram_byteenable;
 	wire dp_ram_write;
 	wire [3:0] dp_ram_state;
 	wire [31:0] dp_ram_writedata, dp_ram_readdata;
@@ -346,7 +345,74 @@ soc_system u0 (
     .done(mult_done), 
     .state(state)
   );
+  
+	// Debounce logic to clean out glitches within 1ms
+	debounce debounce_inst (
+	  .clk                                  (fpga_clk_50),
+	  .reset_n                              (hps_fpga_reset_n),  
+	  .data_in                              (KEY),
+	  .data_out                             (fpga_debounced_buttons)
+	);
+	  defparam debounce_inst.WIDTH = 4;
+	  defparam debounce_inst.POLARITY = "LOW";
+	  defparam debounce_inst.TIMEOUT = 50000;               // at 50Mhz this is a debounce time of 1ms
+	  defparam debounce_inst.TIMEOUT_WIDTH = 16;            // ceil(log2(TIMEOUT))
+	  
+	// Source/Probe megawizard instance
+	hps_reset hps_reset_inst (
+	  .source_clk (fpga_clk_50),
+	  .source     (hps_reset_req)
+	);
 
+	altera_edge_detector pulse_cold_reset (
+	  .clk       (fpga_clk_50),
+	  .rst_n     (hps_fpga_reset_n),
+	  .signal_in (hps_reset_req[0]),
+	  .pulse_out (hps_cold_reset)
+	);
+	  defparam pulse_cold_reset.PULSE_EXT = 6;
+	  defparam pulse_cold_reset.EDGE_TYPE = 1;
+	  defparam pulse_cold_reset.IGNORE_RST_WHILE_BUSY = 1;
+
+	altera_edge_detector pulse_warm_reset (
+	  .clk       (fpga_clk_50),
+	  .rst_n     (hps_fpga_reset_n),
+	  .signal_in (hps_reset_req[1]),
+	  .pulse_out (hps_warm_reset)
+	);
+	  defparam pulse_warm_reset.PULSE_EXT = 2;
+	  defparam pulse_warm_reset.EDGE_TYPE = 1;
+	  defparam pulse_warm_reset.IGNORE_RST_WHILE_BUSY = 1;
+	  
+	altera_edge_detector pulse_debug_reset (
+	  .clk       (fpga_clk_50),
+	  .rst_n     (hps_fpga_reset_n),
+	  .signal_in (hps_reset_req[2]),
+	  .pulse_out (hps_debug_reset)
+	);
+	  defparam pulse_debug_reset.PULSE_EXT = 32;
+	  defparam pulse_debug_reset.EDGE_TYPE = 1;
+	  defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
+	  
+	reg [25:0] counter; 
+	reg  led_level;
+	always @(posedge fpga_clk_50 or negedge hps_fpga_reset_n)
+	begin
+	if(~hps_fpga_reset_n)
+	begin
+						 counter<=0;
+						 led_level<=0;
+	end
+
+	else if(counter==24999999)
+			  begin
+						 counter<=0;
+						 led_level<=~led_level;
+			  end
+	else
+						 counter<=counter+1'b1;
+	end
+  
 	SEG7_LUT d0(.in(A_w), .dot(1'b0), .out(hex0_w));
 	SEG7_LUT d1(.in(B_w), .dot(1'b0), .out(hex1_w));
 	SEG7_LUT d2(.in(state), .dot(1'b1), .out(hex2_w));
@@ -360,11 +426,13 @@ soc_system u0 (
     .WRITE_F(dp_ram_write),
     .ADDR(dp_ram_addr), 
     .READ_DATA(dp_ram_readdata), 
-    .WRITE_DATA(dp_ram_writedata), 
+    .WRITE_DATA(dp_ram_writedata),
+    .BYTE_ENABLE(dp_ram_byteenable), 
     .ena(enable),
     .A(A_w),
     .B(B_w),
     .done(mult_done),
+	 .Y(res),
 	 .state_o(dp_ram_state)
   );
 
