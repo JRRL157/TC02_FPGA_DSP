@@ -38,10 +38,10 @@
 #define DP_RAM_SPAN 4
 #define DP_RAM_MEM_SPAN DP_RAM_WIDTH*DP_RAM_SPAN
 
-#define CONTROL_OFFSET 0x00
-#define DATA_IN_OFFSET 0x01
-#define DATA_OUT_OFFSET 0x02
-#define STATUS_OFFSET 0x03
+#define CONTROL_OFFSET 0
+#define DATA_IN_OFFSET 1
+#define DATA_OUT_OFFSET 2
+#define STATUS_OFFSET 3
 
 int main()
 {
@@ -93,20 +93,33 @@ int main()
 		uint32_t data_out;
 
 		perif = peripheral_create(DP_RAM_BASE_ADDR, DP_RAM_MEM_SPAN);
-		peripheral_write32(perif, CONTROL_OFFSET, 0x1);
+
+		printf("Writing %x to DATA_IN address\n", numbers);
 		peripheral_write32(perif, DATA_IN_OFFSET, numbers);
 
+		uint32_t numbers_wrt = peripheral_read32(perif, DATA_IN_OFFSET);
+		printf("Wrote %x in address %x\n", numbers_wrt, DP_RAM_BASE_ADDR + DATA_IN_OFFSET);
+
+		printf("Writing 0x1 to Control address\n");
+		peripheral_write32(perif, CONTROL_OFFSET, 0x1);
+
 		do {
+			usleep(100000);
+			data_out = peripheral_read32(perif, DATA_OUT_OFFSET);
+			if(data_out != 0) {
+				printf("Data out = %x\n", data_out);
+			}
+			else {
+				printf("Waiting for data...\n");
+			}
 			status = peripheral_read32(perif, STATUS_OFFSET);
-		} while((status & 0x1) == 0);
+			//printf("[status] = %x\n", status);
+		} while(status == 0);
 
 		data_out = peripheral_read32(perif, DATA_OUT_OFFSET);
-		peripheral_write32(perif, STATUS_OFFSET, 0x0);
-
 		printf("Data out = %x, %u\n", data_out, data_out);
 
-		res = a * b;
-		printf("Resultado = %u\n", res);
+		printf("%u * %u = %u\n", a, b, data_out);
 
 	   	if (n < 0) printf("recvfrom");
 	   	else
@@ -115,11 +128,15 @@ int main()
 			usleep(1000); //Esperando um tempo para ver se o python espera a mensagem;
 
 			bzero(buf, N_BUF);
-			snprintf(buf, sizeof(buf), "%u", res);
+			snprintf(buf, sizeof(buf), "%u", data_out);
 
 			printf("Devolvendo pacote recebido:\n");
 			n = sendto(sock, buf, sizeof(res), 0, (struct sockaddr *) &from, fromlen);
 			if (n  < 0) printf("sendto");
+
+			printf("Writing 0 to Status OFFSET\n");
+			usleep(100);
+			peripheral_write32(perif, CONTROL_OFFSET, 0x0);
 		}
 	}
 }
