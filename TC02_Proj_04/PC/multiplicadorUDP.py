@@ -1,6 +1,7 @@
 import socket
 import numpy
 import struct
+import time
 
 def communication(msgFromClient: str, ip_address: str, port: int) -> int:
     bytesToSend         = str.encode(msgFromClient)
@@ -29,7 +30,7 @@ def communication(msgFromClient: str, ip_address: str, port: int) -> int:
 def multiplicar(num1: int, num2: int) -> int:
     return num1 * num2;
 
-ip_address = "192.168.1.117"
+ip_address = "10.42.0.23"
 port = 9090
 
 quadro_final = {
@@ -37,11 +38,13 @@ quadro_final = {
     'total': 0,
     'occurrence': []
 }
-for a in range(2,16):
+for a in range(1,16):
     for b in range(a,16):
+        time.sleep(0.01)
         res = multiplicar(a,b)
         
         msg = f"{a},{b}"
+        #msg = f"{hex(a).replace('0x','')}{hex(b).replace('0x','')}"
         print(msg)
         int_rec = communication(msg, ip_address, port)
         
