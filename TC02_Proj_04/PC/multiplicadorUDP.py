@@ -39,7 +39,7 @@ quadro_final = {
     'occurrence': []
 }
 for a in range(1,16):
-    for b in range(a,16):
+    for b in range(1,16):
         time.sleep(0.01)
         res = multiplicar(a,b)
         
