@@ -77,16 +77,15 @@ module DE10_LITE_Default(
 	SEG7_LUT d4(.in(res[3:0]), .dot(1'b1), .out(hex4_w));
 	SEG7_LUT d5(.in(res[7:4]), .dot(1'b0), .out(hex5_w));
 
-
 	four_bit_multiplier mult(.clk(MAX10_CLK1_50), .rst(SW[0]), .ena(SW[9]), .A(A), .B(B), .Y(res), .done(LEDR[8]), .state(state));
-	
+
 	assign HEX0 = hex0_w;
 	assign HEX1 = hex1_w;
 	assign HEX2 = hex2_w;
 	assign HEX3 = 8'hFF;
 	assign HEX4 = hex4_w;
 	assign HEX5 = hex5_w;
-	
+
 	assign LEDR[7:0] = res;
 	assign LEDR[9] = SW[9];
 
