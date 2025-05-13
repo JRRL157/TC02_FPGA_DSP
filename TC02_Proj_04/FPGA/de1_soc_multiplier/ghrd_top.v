@@ -326,13 +326,13 @@ soc_system u0 (
 	wire dp_ram_write;
 	wire [3:0] dp_ram_state;
 	wire [31:0] dp_ram_writedata, dp_ram_readdata;
-	
+
 	wire [3:0] A_w, B_w;
 	wire [7:0] res;
 	wire [3:0] state;
 	wire enable;
 	wire mult_done;
-	
+
 	wire [7:0] hex0_w, hex1_w, hex2_w, hex3_w, hex4_w, hex5_w;
 
 	four_bit_multiplier mult(
@@ -345,74 +345,7 @@ soc_system u0 (
     .done(mult_done), 
     .state(state)
   );
-  
-	// Debounce logic to clean out glitches within 1ms
-	debounce debounce_inst (
-	  .clk                                  (fpga_clk_50),
-	  .reset_n                              (hps_fpga_reset_n),  
-	  .data_in                              (KEY),
-	  .data_out                             (fpga_debounced_buttons)
-	);
-	  defparam debounce_inst.WIDTH = 4;
-	  defparam debounce_inst.POLARITY = "LOW";
-	  defparam debounce_inst.TIMEOUT = 50000;               // at 50Mhz this is a debounce time of 1ms
-	  defparam debounce_inst.TIMEOUT_WIDTH = 16;            // ceil(log2(TIMEOUT))
-	  
-	// Source/Probe megawizard instance
-	hps_reset hps_reset_inst (
-	  .source_clk (fpga_clk_50),
-	  .source     (hps_reset_req)
-	);
 
-	altera_edge_detector pulse_cold_reset (
-	  .clk       (fpga_clk_50),
-	  .rst_n     (hps_fpga_reset_n),
-	  .signal_in (hps_reset_req[0]),
-	  .pulse_out (hps_cold_reset)
-	);
-	  defparam pulse_cold_reset.PULSE_EXT = 6;
-	  defparam pulse_cold_reset.EDGE_TYPE = 1;
-	  defparam pulse_cold_reset.IGNORE_RST_WHILE_BUSY = 1;
-
-	altera_edge_detector pulse_warm_reset (
-	  .clk       (fpga_clk_50),
-	  .rst_n     (hps_fpga_reset_n),
-	  .signal_in (hps_reset_req[1]),
-	  .pulse_out (hps_warm_reset)
-	);
-	  defparam pulse_warm_reset.PULSE_EXT = 2;
-	  defparam pulse_warm_reset.EDGE_TYPE = 1;
-	  defparam pulse_warm_reset.IGNORE_RST_WHILE_BUSY = 1;
-	  
-	altera_edge_detector pulse_debug_reset (
-	  .clk       (fpga_clk_50),
-	  .rst_n     (hps_fpga_reset_n),
-	  .signal_in (hps_reset_req[2]),
-	  .pulse_out (hps_debug_reset)
-	);
-	  defparam pulse_debug_reset.PULSE_EXT = 32;
-	  defparam pulse_debug_reset.EDGE_TYPE = 1;
-	  defparam pulse_debug_reset.IGNORE_RST_WHILE_BUSY = 1;
-	  
-	reg [25:0] counter; 
-	reg  led_level;
-	always @(posedge fpga_clk_50 or negedge hps_fpga_reset_n)
-	begin
-	if(~hps_fpga_reset_n)
-	begin
-						 counter<=0;
-						 led_level<=0;
-	end
-
-	else if(counter==24999999)
-			  begin
-						 counter<=0;
-						 led_level<=~led_level;
-			  end
-	else
-						 counter<=counter+1'b1;
-	end
-  
 	SEG7_LUT d0(.in(A_w), .dot(1'b0), .out(hex0_w));
 	SEG7_LUT d1(.in(B_w), .dot(1'b0), .out(hex1_w));
 	SEG7_LUT d2(.in(state), .dot(1'b1), .out(hex2_w));

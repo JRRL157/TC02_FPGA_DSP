@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 //UDP
-#define N_BUF    20
+#define N_BUF    8
 
 //Dual Port RAM
 #define DP_RAM_BASE_ADDR 0x40000
@@ -106,14 +106,16 @@ int main()
 		do {
 			usleep(100000);
 			data_out = peripheral_read32(perif, DATA_OUT_OFFSET);
+			/*
 			if(data_out != 0) {
 				printf("Data out = %x\n", data_out);
+				break;
 			}
 			else {
 				printf("Waiting for data...\n");
 			}
+			*/
 			status = peripheral_read32(perif, STATUS_OFFSET);
-			//printf("[status] = %x\n", status);
 		} while(status == 0);
 
 		data_out = peripheral_read32(perif, DATA_OUT_OFFSET);
@@ -125,7 +127,7 @@ int main()
 	   	else
 	   	{
 			printf("Esperando um tempo\n");
-			usleep(1000); //Esperando um tempo para ver se o python espera a mensagem;
+			usleep(1000*1000*3); //Esperando um tempo para ver se o python espera a mensagem;
 
 			bzero(buf, N_BUF);
 			snprintf(buf, sizeof(buf), "%u", data_out);
@@ -135,7 +137,7 @@ int main()
 			if (n  < 0) printf("sendto");
 
 			printf("Writing 0 to Status OFFSET\n");
-			usleep(100);
+			usleep(10000);
 			peripheral_write32(perif, CONTROL_OFFSET, 0x0);
 		}
 	}
