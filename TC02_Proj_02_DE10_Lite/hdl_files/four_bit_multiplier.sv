@@ -42,8 +42,8 @@ module four_bit_multiplier(
 		.data_i  (done_i_w),
 		.data_o  (done)
    );
-	reg [7:0] prod [3:0];
-	reg [7:0] next_prod [3:0]; 
+	reg [7:0] prod;
+	reg [7:0] next_prod;
 
     controlador controlador_inst(
         .clk_i(clk),
@@ -54,69 +54,51 @@ module four_bit_multiplier(
 
 	 always @(posedge clk) begin
 		if (!rst) begin
-			prod[0] <= 8'b0;
-			prod[1] <= 8'b0;
-			prod[2] <= 8'b0;
-			prod[3] <= 8'b0;
+			prod <= 8'b0;
 		end
 		else
 		begin
-			prod[0] <= next_prod[0];
-			prod[1] <= next_prod[1];
-			prod[2] <= next_prod[2];
-			prod[3] <= next_prod[3];
+			prod <= next_prod;
 		end
 	 end
 
     always @(*) begin        
-        next_prod[0] = prod[0];
-        next_prod[1] = prod[1];
-        next_prod[2] = prod[2];
-        next_prod[3] = prod[3];
+        next_prod = prod;
 		  A_i_w = {4'b0, A};
 		  B_i_w = {4'b0, B};
 		  case(state)
             ST_IDLE: begin                
 					 done_i_w = 1'b0;
 					 Y_i_w = 8'b0;
-					 next_prod[0] = 8'd0;
-					 next_prod[1] = 8'd0;
-					 next_prod[2] = 8'd0;
-					 next_prod[3] = 8'd0;
-					 //state_i_w = ena ? ST_COMPUTE_PROD0 : ST_IDLE;
+					 next_prod = 8'd0;
             end
             ST_COMPUTE_PROD0: begin
-                next_prod[0] = B_o_w[0] ? A_o_w : 8'b0;
+                next_prod = B_o_w[0] ? A_o_w + prod : prod;
                 done_i_w = 1'b0;
 					 Y_i_w = 8'b0;
-					 //state_i_w = ST_COMPUTE_PROD1;
             end
             ST_COMPUTE_PROD1:
             begin
-                next_prod[1] = B_o_w[1] ? A_o_w : 8'b0;
+                next_prod = B_o_w[1] ? (A_o_w << 1) + prod : prod;
                 done_i_w = 1'b0;
 					 Y_i_w = 8'b0;
-					 //state_i_w = ST_COMPUTE_PROD2;
             end
             ST_COMPUTE_PROD2:
             begin
-                next_prod[2] = B_o_w[2] ? A_o_w : 8'b0;
+                next_prod = B_o_w[2] ? (A_o_w << 2) + prod : prod;
                 done_i_w = 1'b0;
 					 Y_i_w = 8'b0;
-					 //state_i_w = ST_COMPUTE_PROD3;
             end
             ST_COMPUTE_PROD3:
             begin
-                next_prod[3] = B_o_w[3] ? A_o_w : 8'b0;
+                next_prod = B_o_w[3] ? (A_o_w << 3) + prod : prod;
                 done_i_w = 1'b0;
 					 Y_i_w = 8'b0;
-					 //state_i_w = ST_END;
             end
             ST_END:
             begin
 					 done_i_w = 1'b1;
-					 Y_i_w = next_prod[0] + (next_prod[1] << 1) + (next_prod[2] << 2) + (next_prod[3] << 3);
-					 //state_i_w = ST_IDLE;
+					 Y_i_w = prod;
             end
 				default:
 				begin
