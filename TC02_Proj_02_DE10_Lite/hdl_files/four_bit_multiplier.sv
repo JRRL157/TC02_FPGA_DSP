@@ -13,6 +13,8 @@ module four_bit_multiplier(
 	wire [7:0] A_i_w, A_o_w, B_i_w, B_o_w;
 	wire done_i_w;
 	wire [7:0] Y_i_w;
+	wire [7:0] prod_i_w;
+	wire [7:0] prod_o_w;
 
 	registrador #(.DATA_WIDTH(8)) reg_A_inst(
 		.clk_i   (clk),
@@ -42,72 +44,66 @@ module four_bit_multiplier(
 		.data_i  (done_i_w),
 		.data_o  (done)
    );
-	reg [7:0] prod;
-	reg [7:0] next_prod;
+	
+	registrador #(.DATA_WIDTH(8)) reg_prod_inst(
+		.clk_i   (clk),
+		.rst_i   (rst),
+		.enable_i (1'b1),
+		.data_i  (prod_i_w),
+		.data_o  (prod_o_w)
+   );
 
-    controlador controlador_inst(
-        .clk_i(clk),
-        .rst_i(rst),
-        .strt_cmpt_i(ena),
-        .state_o(state)
-    );
+	controlador controlador_inst(
+	  .clk_i(clk),
+	  .rst_i(rst),
+	  .strt_cmpt_i(ena),
+	  .state_o(state)
+	);
 
-	 always @(posedge clk) begin
-		if (!rst) begin
-			prod <= 8'b0;
-		end
-		else
-		begin
-			prod <= next_prod;
-		end
-	 end
-
-    always @(*) begin        
-        next_prod = prod;
-		  A_i_w = {4'b0, A};
-		  B_i_w = {4'b0, B};
-		  case(state)
-            ST_IDLE: begin                
-					 done_i_w = 1'b0;
-					 Y_i_w = 8'b0;
-					 next_prod = 8'd0;
-            end
-            ST_COMPUTE_PROD0: begin
-                next_prod = B_o_w[0] ? A_o_w + prod : prod;
-                done_i_w = 1'b0;
-					 Y_i_w = 8'b0;
-            end
-            ST_COMPUTE_PROD1:
-            begin
-                next_prod = B_o_w[1] ? (A_o_w << 1) + prod : prod;
-                done_i_w = 1'b0;
-					 Y_i_w = 8'b0;
-            end
-            ST_COMPUTE_PROD2:
-            begin
-                next_prod = B_o_w[2] ? (A_o_w << 2) + prod : prod;
-                done_i_w = 1'b0;
-					 Y_i_w = 8'b0;
-            end
-            ST_COMPUTE_PROD3:
-            begin
-                next_prod = B_o_w[3] ? (A_o_w << 3) + prod : prod;
-                done_i_w = 1'b0;
-					 Y_i_w = 8'b0;
-            end
-            ST_END:
-            begin
-					 done_i_w = 1'b1;
-					 Y_i_w = prod;
-            end
-				default:
-				begin
-					done_i_w = 1'b0;
-					Y_i_w = 8'b1;
-				end
-        endcase
-    end
-
-	//assign state = state_o_w;
+	always @(*) begin
+	  prod_i_w = prod_o_w;
+	  A_i_w = {4'b0, A};
+	  B_i_w = {4'b0, B};
+	  case(state)
+			ST_IDLE: begin                
+				 done_i_w = 1'b0;
+				 Y_i_w = 8'b0;
+				 prod_i_w = 8'd0;
+			end
+			ST_COMPUTE_PROD0: begin
+				 prod_i_w= B_o_w[0] ? A_o_w + prod_o_w : prod_o_w;				 
+				 done_i_w = 1'b0;
+				 Y_i_w = 8'b0;
+			end
+			ST_COMPUTE_PROD1:
+			begin
+				 prod_i_w = B_o_w[1] ? (A_o_w << 1) + prod_o_w : prod_o_w;
+				 done_i_w = 1'b0;
+				 Y_i_w = 8'b0;
+			end
+			ST_COMPUTE_PROD2:
+			begin
+				 prod_i_w = B_o_w[2] ? (A_o_w << 2) + prod_o_w : prod_o_w;
+				 done_i_w = 1'b0;
+				 Y_i_w = 8'b0;
+			end
+			ST_COMPUTE_PROD3:
+			begin
+				 prod_i_w = B_o_w[3] ? (A_o_w << 3) + prod_o_w : prod_o_w;
+				 done_i_w = 1'b0;
+				 Y_i_w = 8'b0;
+			end
+			ST_END:
+			begin
+				 done_i_w = 1'b1;
+				 Y_i_w = prod_o_w;
+			end
+			default:
+			begin
+				done_i_w = 1'b0;
+				Y_i_w = 8'b1;
+			end
+	  endcase
+	end
 
 endmodule
