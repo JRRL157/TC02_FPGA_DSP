@@ -1,0 +1,32 @@
+Type: 1, SNR: 10.000000, BER: 4.609375e-02
+Type: 1, SNR: 15.000000, BER: 1.210938e-02
+Type: 1, SNR: 20.000000, BER: 7.812500e-04
+Type: 1, SNR: 25.000000, BER: 0.000000e+00
+Type: 1, SNR: 30.000000, BER: 0.000000e+00
+Type: 2, SNR: 10.000000, BER: 6.015625e-02
+Type: 2, SNR: 15.000000, BER: 6.250000e-03
+Type: 2, SNR: 20.000000, BER: 0.000000e+00
+Type: 2, SNR: 25.000000, BER: 0.000000e+00
+Type: 2, SNR: 30.000000, BER: 0.000000e+00
+Type: 1, SNR: 10.000000, BER: 6.223438e-02
+Type: 1, SNR: 20.000000, BER: 7.578125e-04
+Type: 1, SNR: 30.000000, BER: 0.000000e+00
+Type: 2, SNR: 10.000000, BER: 6.066406e-02
+Type: 2, SNR: 20.000000, BER: 4.648437e-04
+Type: 2, SNR: 30.000000, BER: 0.000000e+00
+Type: 1, Modulation: , SNR: 10.000000, BER: 6.402344e-02
+Type: 1, Modulation: , SNR: 20.000000, BER: 5.976562e-04
+Type: 2, Modulation: , SNR: 10.000000, BER: 6.281250e-02
+Type: 2, Modulation: , SNR: 20.000000, BER: 6.835937e-04
+Type: 1, Modulation: , SNR: 10.000000, BER: 7.003125e-02
+Type: 1, Modulation: , SNR: 20.000000, BER: 2.015625e-03
+Type: 2, Modulation: , SNR: 10.000000, BER: 7.373438e-02
+Type: 2, Modulation: , SNR: 20.000000, BER: 2.328125e-03
+Type: 1, Modulation: , SNR: 10.000000, BER: 5.966016e-02
+Type: 1, Modulation: , SNR: 20.000000, BER: 6.367188e-04
+Type: 2, Modulation: , SNR: 10.000000, BER: 6.585156e-02
+Type: 2, Modulation: , SNR: 20.000000, BER: 5.742187e-04
+Type: 1, Modulation: , SNR: 10.000000, BER: 5.811523e-02
+Type: 1, Modulation: , SNR: 20.000000, BER: 3.457031e-04
+Type: 2, Modulation: , SNR: 10.000000, BER: 6.006055e-02
+Type: 2, Modulation: , SNR: 20.000000, BER: 4.306641e-04
