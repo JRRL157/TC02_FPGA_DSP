@@ -31,9 +31,10 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
       P((j-1)*M+1:j*M,(i-1)*N+1:i*N)=E;
     end
   end
-
-  X_tf = Hm*X*Hn';
-  X_til = Hm' * X_tf;
+  
+  X_tf = Hm*X*Hn';%TODO: UPDATE
+  X_til = Hm' * X_tf;%TODO: UPDATE
+  
   s = reshape(X_til, 1, N*M);
 
   % Channel
@@ -89,8 +90,8 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
 
   % OTFS demodulation
   Y_til = reshape(r, M, N);
-  Y_tf = Hm * Y_til;
-  Y = Hm' * Y_tf * Hn;
+  Y_tf = Hm * Y_til;%TODO: UPDATE
+  Y = Hm' * Y_tf * Hn;%TODO: UPDATE
 
   % OTFS delay-doppler LMMSE detection
   y = reshape(Y.', N*M, 1);

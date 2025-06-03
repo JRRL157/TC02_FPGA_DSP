@@ -60,7 +60,7 @@ simulation_params = [
     %8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
     %8, 64, 50, 60e9, 1.875e6; %BW=120MHz, [2]
 
-    16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
+    %16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
     %4, 128, 300, 5.9e9, 78.125e3;%BW=10MHz [3]
 ];
 
@@ -129,14 +129,15 @@ for idx = 1:size(simulation_params)
 
               % Calcule o BER para o valor atual de SNR
               BER_values(type, snr_idx) = total_errors / total_bits;
-              
+
               % Write BER values to a file
               filename = 'ber_values.txt';
               file = fopen(filename, 'a'); % Open file in append mode
               if file == -1
                   error('Could not open file for writing.');
               end
-              fprintf(file, 'Type: %d, Modulation: %s, SNR: %f, BER: %e\n', type, mod_size, SNR_db, BER_values(type, snr_idx));
+              dateAndTime = datestr(now(), 'yyyy_mmmm_dd_HH-MM-SS');
+              fprintf(file, 'Date: %s: Type: %d, Modulation: %d-QAM, SNR: %f, BER: %e\n', type, mod_size, dateAndTime, SNR_db, BER_values(type, snr_idx));
               fclose(file);
           end
         end

@@ -1,13 +1,28 @@
 import numpy as np
+from scipy.linalg import hadamard
 
-def radix2(x: np.ndarray) -> np.ndarray:    
-    N = x.shape[0]
+def dwht(x, N) -> np.ndarray:
+    """
+    Perform the Discrete Walsh-Hadamard Transform (DWHT) on a 1D array.
 
-    even = x[0]
-    odd = x[1]
+    Args:
+        x (np.ndarray): Input array of shape (N,).
+        N (int): Length of the input array, must be a power of 2.
 
-    plus = even + odd
-    minus = even - odd
+    Returns:
+        np.ndarray: Transformed array of shape (N,).
+    """
+    if N <= 0 or (N & (N - 1)) != 0:
+        raise ValueError("N must be a positive power of 2.")
 
-    return np.concatenate((plus, minus))
+    if x.shape[0] != N:
+        raise ValueError(f"Input array must have length {N}.")
 
+    print(f"X = {x}")
+    print(f"Hadamard matrix for N={N}:\n{hadamard(N)}")
+
+    # Base case
+    if N == 1:
+        return x
+
+    return np.dot(hadamard(N), x);
