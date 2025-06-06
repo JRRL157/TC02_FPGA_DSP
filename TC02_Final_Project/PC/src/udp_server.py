@@ -1,24 +1,7 @@
 import socket
 import struct
 import numpy as np
-from dwht import dwht
-
-def processing(data: np.ndarray) -> np.ndarray:
-    """
-    Dummy processing function that simulates some computation on the data.
-    This function can be modified to perform any desired operation.
-    
-    Args:
-        data (np.ndarray): Input data array.
-    
-    Returns:
-        np.ndarray: Processed data array.
-    """
-
-    print(data.shape[0])
-    output_data: np.ndarray = dwht(data, data.shape[0])
-
-    return output_data
+from dwht import dwht_1d, dwht_2d
 
 def udp_server(server_ip: str, server_port: int, buffer_size: int = 1024) -> None:
     """
@@ -42,8 +25,11 @@ def udp_server(server_ip: str, server_port: int, buffer_size: int = 1024) -> Non
             # Unpack the received data (assuming it's an array of doubles)
             received_data = np.frombuffer(data, dtype=np.float64)            
 
+            print(received_data)
+            print(received_data.shape)
+
             # Concatenate the results
-            response_data = processing(received_data)            
+            response_data = dwht_1d(received_data, received_data.shape[0])
 
             # Pack the response data
             response_bytes = response_data.tobytes()
@@ -54,7 +40,6 @@ def udp_server(server_ip: str, server_port: int, buffer_size: int = 1024) -> Non
 
         except Exception as e:
             print(f"Error processing data: {e}")
-
 
 def udp_server_matrix(server_ip: str, server_port: int, buffer_size: int = 1024) -> None:
     """
@@ -78,8 +63,15 @@ def udp_server_matrix(server_ip: str, server_port: int, buffer_size: int = 1024)
             # Unpack the received data (assuming it's an array of doubles)
             received_data = np.frombuffer(data, dtype=np.float64)            
 
+            print(received_data)
+            print(received_data.shape)
+            N = received_data[0].astype(int)
+            M = received_data[1].astype(int)
+            matrix_data = received_data[2:].reshape((N, M))
+
+            print(matrix_data)
             # Concatenate the results
-            response_data = 2*received_data
+            response_data = dwht_2d(matrix_data, N, M)
 
             # Pack the response data
             response_bytes = response_data.tobytes()
