@@ -4,7 +4,7 @@ function Y = udp_client_matrix_C(server_ip, server_port, data_matrix)
     fopen(u);
 
     [rows, cols] = size(data_matrix);
-    
+
     flattened_data = data_matrix'; % Transpose
     flattened_data = flattened_data(:).'; % Flatten row-wise by flattening the transposed matrix
 

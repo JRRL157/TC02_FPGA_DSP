@@ -63,9 +63,7 @@ int main() {
         int cols = (int)received_data[1];
 
         // Validate matrix dimensions
-        if (rows <= 0 || cols <= 0 ||
-            rows > MAX_MATRIX_DIMENSION || cols > MAX_MATRIX_DIMENSION ||
-            (rows * cols * sizeof(double) + 2 * sizeof(double)) > n_bytes) {
+        if (rows <= 0 || cols <= 0 || rows > MAX_MATRIX_DIMENSION || cols > MAX_MATRIX_DIMENSION || (rows * cols * sizeof(double) + 2 * sizeof(double)) > n_bytes) {
             fprintf(stderr, "Invalid matrix dimensions received: %dx%d or data size mismatch.\n", rows, cols);
             continue;
         }
