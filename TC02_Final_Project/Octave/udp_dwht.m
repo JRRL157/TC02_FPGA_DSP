@@ -1,4 +1,4 @@
-function Y = udp_client_matrix_C(server_ip, server_port, data_matrix)
+function Y = udp_dwht(command, server_ip, server_port, data_matrix)
     u = udp(server_ip, server_port, 'LocalPort', 0, 'Timeout', 10);
 
     fopen(u);
@@ -8,12 +8,7 @@ function Y = udp_client_matrix_C(server_ip, server_port, data_matrix)
     flattened_data = data_matrix'; % Transpose
     flattened_data = flattened_data(:).'; % Flatten row-wise by flattening the transposed matrix
 
-    data_to_send = [double(rows), double(cols), flattened_data];
-
-    disp("Size of data_to_send:");
-    disp(size(data_to_send));
-    disp("Data being sent (first few elements):");
-    disp(data_to_send(1: min(10, numel(data_to_send))));
+    data_to_send = [command, rows, cols, flattened_data];
 
     fwrite(u, data_to_send, 'double');
 

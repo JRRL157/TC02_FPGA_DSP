@@ -4,7 +4,7 @@
 clc;
 clear;
 pkg load communications;
-which qammod;
+pkg load instrument-control
 
 % Prefixo
 directory = "images/";
@@ -53,11 +53,11 @@ BER_values = zeros(length(mod_schemes), length(SNR_values));
 simulation_params = [
     16, 16, 500, 6e9, 30e3; %[1]
 
-    %8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
+    8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
     %8, 64, 50, 60e9, 78125;%BW=5MHz, [2]
-    %8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
+    8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
     %8, 64, 50, 60e9, 625e3;%BW=40MHz, [2]
-    %8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
+    8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
     %8, 64, 50, 60e9, 1.875e6; %BW=120MHz, [2]
 
     %16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
@@ -137,7 +137,7 @@ for idx = 1:size(simulation_params)
                   error('Could not open file for writing.');
               end
               dateAndTime = datestr(now(), 'yyyy_mmmm_dd_HH-MM-SS');
-              fprintf(file, 'Date: %s: Type: %d, Modulation: %d-QAM, SNR: %f, BER: %e\n', type, mod_size, dateAndTime, SNR_db, BER_values(type, snr_idx));
+              fprintf(file, 'Date: %s: Type: %d, Modulation: %d-QAM, SNR: %f, BER: %e\n', dateAndTime, type, mod_size, SNR_db, BER_values(type, snr_idx));
               fclose(file);
           end
         end

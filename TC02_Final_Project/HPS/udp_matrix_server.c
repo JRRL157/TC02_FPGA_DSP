@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "dwht.h"
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
@@ -7,7 +6,7 @@
 
 #define PORT 5005
 #define MAX_MATRIX_DIMENSION 128
-#define MAX_BUFFER_SIZE ((MAX_MATRIX_DIMENSION * MAX_MATRIX_DIMENSION * sizeof(double)) + sizeof(double) * 2)
+#define MAX_BUFFER_SIZE ((MAX_MATRIX_DIMENSION * MAX_MATRIX_DIMENSION * sizeof(double) * 2) + sizeof(double) * 3)
 
 void print_matrix(const double *matrix, int rows, int cols) {
     printf("Received matrix (%d x %d): \n", rows, cols);
@@ -54,13 +53,14 @@ int main() {
             continue;
         }
 
-        printf("Received %d bytes from %s:%d\n", n_bytes,inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+        //printf("Received %d bytes from %s:%d\n", n_bytes,inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
         double *received_data = (double *)buffer;
 
         // First two doubles sent by Octave are the dimensions (rows and columns) of the matrix
-        int rows = (int)received_data[0];
-        int cols = (int)received_data[1];
+        int cmd = (int)received_data[0];
+        int rows = (int)received_data[1];
+        int cols = (int)received_data[2];
 
         // Validate matrix dimensions
         if (rows <= 0 || cols <= 0 || rows > MAX_MATRIX_DIMENSION || cols > MAX_MATRIX_DIMENSION || (rows * cols * sizeof(double) + 2 * sizeof(double)) > n_bytes) {
@@ -68,18 +68,33 @@ int main() {
             continue;
         }
 
-        //Getting matrix data        
-        double *matrix = (double *)(buffer + 2 * sizeof(double)); // Equivalent to &received_data[2] in C
+        //Getting matrix data
+        double *matrix = (double *)(buffer + 3 * sizeof(double));
 
         print_matrix(matrix, rows, cols);
 
-        //TODO: Apply some operation over the matrix as you wish
-        
-        if (sendto(sockfd, matrix, n_bytes, 0, (const struct sockaddr *)&client_addr, client_addr_len) < 0) {
+        double* p_matrix = NULL;
+        switch(cmd) {
+            case 0: // DWHT 1D
+                p_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
+                break;
+            case 1: // DWHT 2D
+                p_matrix = dwht_2d_octave(matrix, rows, cols);
+                break;
+        }
+
+        if (p_matrix == NULL) {
+            fprintf(stderr, "Error applying DWHT into matrix.\n");
+            continue;
+        }
+
+        //print_matrix(p_matrix, rows, cols);
+
+        if (sendto(sockfd, p_matrix, n_bytes, 0, (const struct sockaddr *)&client_addr, client_addr_len) < 0) {
             perror("Send failed");
         } else {
             printf("Sent %d bytes back to %s:%d\n", n_bytes, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-        }        
+        }
     }
 
     close(sockfd);

@@ -31,10 +31,19 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
       P((j-1)*M+1:j*M,(i-1)*N+1:i*N)=E;
     end
   end
+
+  X_tf_ideal = Hm*X*Hn';%TODO: UPDATE
+  disp(X);
+  X_tf_r = udp_dwht(1, "127.0.0.1", 5005, real(X));
+  X_tf_i = udp_dwht(1, "127.0.0.1", 5005, imag(X));
+  X_tf = X_tf_r + (X_tf_i * 1i);  
   
-  X_tf = Hm*X*Hn';%TODO: UPDATE
-  X_til = Hm' * X_tf;%TODO: UPDATE
-  
+  X_til_ideal = Hm' * X_tf;%TODO: UPDATE
+  X_til_r = udp_dwht(0, "127.0.0.1", 5005, X_tf_r);
+  X_til_i = udp_dwht(0, "127.0.0.1", 5005, X_tf_i);
+  X_til = X_til_r + (X_til_i * 1i);
+  disp(X_til);
+
   s = reshape(X_til, 1, N*M);
 
   % Channel
@@ -95,12 +104,11 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
 
   % OTFS delay-doppler LMMSE detection
   y = reshape(Y.', N*M, 1);
-  %H = eye(N * M);  % Canal idealizado
   x_hat = (((H' * H + sigma_w_2*eye(size(H)))^(-1)) * H') * y;
-  %x_hat = (G' * G + sigma_w_2)^(-1) * (G' * y); % Aqui ajustamos o canal simplificado
-    if isnan(x_hat)
-      x_hat = 0;
-      x_hat2 = 0;
+
+  if isnan(x_hat)
+    x_hat = 0;
+    x_hat2 = 0;
   else
     x_hat = qamdemod(x_hat, mod_size);
     x_hat2 = qammod(x_hat, mod_size);
