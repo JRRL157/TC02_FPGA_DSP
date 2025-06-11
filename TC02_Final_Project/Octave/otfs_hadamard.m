@@ -1,4 +1,7 @@
 function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, delays_arr, pdp_arr)
+  ip_addr = "10.42.0.23"
+  port = 5005;
+
   Hn = hadamard(N);
   Hm = hadamard(M);
   Hn=Hn/norm(Hn);
@@ -34,13 +37,13 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
 
   X_tf_ideal = Hm*X*Hn';%TODO: UPDATE
   disp(X);
-  X_tf_r = udp_dwht(3, "127.0.0.1", 5005, real(X));
-  X_tf_i = udp_dwht(3, "127.0.0.1", 5005, imag(X));
+  X_tf_r = udp_dwht(3, ip_addr, port, real(X));
+  X_tf_i = udp_dwht(3, ip_addr, port, imag(X));
   X_tf = X_tf_r + (X_tf_i * 1i);  
   
-  X_til_ideal = Hm' * X_tf;%TODO: UPDATE
-  X_til_r = udp_dwht(2, "127.0.0.1", 5005, X_tf_r);
-  X_til_i = udp_dwht(2, "127.0.0.1", 5005, X_tf_i);
+  X_til_ideal = Hm' * X_tf; %TODO: UPDATE
+  X_til_r = udp_dwht(2, ip_addr, port, X_tf_r);
+  X_til_i = udp_dwht(2, ip_addr, port, X_tf_i);
   X_til = X_til_r + (X_til_i * 1i);
   disp(X_til);
 
