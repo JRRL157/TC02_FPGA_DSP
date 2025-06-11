@@ -56,6 +56,21 @@ double* dwht_2d_inverse_octave(double* matrix, int N, int M);
  */
 double* dwht_2d_octave_ll(double* matrix, int N, int M);
 
+
+/**
+ *
+ * @brief Function for 2D DWHT for the Low level implementation for Hm' * X_tf',
+ *  where Hm is the Hadamard matrix of size M
+ * @param matrix A pointer to the input matrix (represented as a 1D array in row-major order).
+ * @param N The number of rows in the matrix. Must be a power of 2.
+ * @param M The number of columns in the matrix. Must be a power of 2.
+ * @return A pointer to the modified matrix (same as the input pointer).
+ *
+ * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
+ * @note The dimensions N and M should be powers of 2 for optimal DWHT performance.
+ */
+double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M);
+
 /**
  * @brief Multiplies two matrices.
  *

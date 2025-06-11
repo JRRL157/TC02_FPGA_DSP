@@ -239,13 +239,13 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
 }
 
 // Function for inverse 2D DWHT (Octave version)
-double* dwht_2d_inverse_octave_ll(double* matrix, int N) {
-    double* Hm = hadamard(N);
+double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M) {
+    double* Hm = hadamard(M);
     if (Hm == NULL) {
         return NULL;
     }
 
-    double* transformed_matrix = (double*)malloc(N * N * sizeof(double));
+    double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
     if (transformed_matrix == NULL) {
         perror("Failed to allocate memory for transformed matrix");
         free(Hm);
@@ -253,11 +253,11 @@ double* dwht_2d_inverse_octave_ll(double* matrix, int N) {
     }
 
     // Perform Hm' * X
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < M; i++) {
         for (int j = 0; j < N; j++) {
-            transformed_matrix[i * N + j] = 0.0;
-            for (int k = 0; k < N; k++) {
-                transformed_matrix[i * N + j] += Hm[k * N + i] * matrix[k * N + j];
+            transformed_matrix[i * M + j] = 0.0;
+            for (int k = 0; k < M; k++) {
+                transformed_matrix[i * N + j] += Hm[k * M + i] * matrix[k * N + j];
             }
         }
     }

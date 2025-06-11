@@ -81,6 +81,15 @@ int main() {
             case 1: // DWHT 2D
                 p_matrix = dwht_2d_octave(matrix, rows, cols);
                 break;
+            case 2: // DWHT 1D Low Level
+                p_matrix = dwht_2d_inverse_octave_ll(matrix, rows, cols);
+                break;
+            case 3: // DWHT 2D Low Level
+                p_matrix = dwht_2d_octave_ll(matrix, rows, cols);
+                break;
+            default:
+                fprintf(stderr, "Unknown command received: %d\n", cmd);
+                break;
         }
 
         if (p_matrix == NULL) {
