@@ -8,8 +8,8 @@
 #define MAX_MATRIX_DIMENSION 128
 #define MAX_BUFFER_SIZE ((MAX_MATRIX_DIMENSION * MAX_MATRIX_DIMENSION * sizeof(double) * 2) + sizeof(double) * 3)
 
-void print_matrix(const double *matrix, int rows, int cols) {
-    printf("Received matrix (%d x %d): \n", rows, cols);
+void print_matrix(const double *matrix, int rows, int cols, char *name) {
+    printf("%s matrix (%d x %d): \n", name, rows, cols);
 
     for(int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -71,35 +71,40 @@ int main() {
         //Getting matrix data
         double *matrix = (double *)(buffer + 3 * sizeof(double));
 
-        print_matrix(matrix, rows, cols);
+        //print_matrix(matrix, rows, cols);
 
-        double* p_matrix = NULL;
+        double* processed_matrix = NULL;
         switch(cmd) {
             case 0: // DWHT 1D
-                p_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
+                processed_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
                 break;
             case 1: // DWHT 2D
-                p_matrix = dwht_2d_octave(matrix, rows, cols);
+                processed_matrix = dwht_2d_octave(matrix, rows, cols);
                 break;
             case 2: // DWHT 1D Low Level
-                p_matrix = dwht_2d_inverse_octave_ll(matrix, rows, cols);
+                processed_matrix = dwht_2d_inverse_octave_ll(matrix, rows, cols);
+                double* debug_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
+                double* error_matrix = diff(processed_matrix, debug_matrix, rows, cols);
+                char *error_matrix_name = "Error Matrix";
+                print_matrix(error_matrix, rows, cols, error_matrix_name);
+                free(debug_matrix);
                 break;
             case 3: // DWHT 2D Low Level
-                p_matrix = dwht_2d_octave_ll(matrix, rows, cols);
+                processed_matrix = dwht_2d_octave_ll(matrix, rows, cols);                
                 break;
             default:
                 fprintf(stderr, "Unknown command received: %d\n", cmd);
                 break;
         }
 
-        if (p_matrix == NULL) {
+        if (processed_matrix == NULL) {
             fprintf(stderr, "Error applying DWHT into matrix.\n");
             continue;
         }
 
         //print_matrix(p_matrix, rows, cols);
 
-        if (sendto(sockfd, p_matrix, n_bytes, 0, (const struct sockaddr *)&client_addr, client_addr_len) < 0) {
+        if (sendto(sockfd, processed_matrix, n_bytes, 0, (const struct sockaddr *)&client_addr, client_addr_len) < 0) {
             perror("Send failed");
         } else {
             printf("Sent %d bytes back to %s:%d\n", n_bytes, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));

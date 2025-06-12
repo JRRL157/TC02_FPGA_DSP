@@ -42,6 +42,22 @@ double* transpose(double *matrix, int N, int M) {
     return transposed;
 }
 
+double* diff(double *matrixA, double* matrixB, int N, int M) {
+    double *result = (double *)malloc(N * M * sizeof(double));
+    if (result == NULL) {
+        perror("Failed to allocate memory for result matrix");
+        return NULL;
+    }
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            result[i * M + j] = matrixA[i * M + j] - matrixB[i * M + j];
+        }
+    }
+
+    return result;
+}
+
 double* __dwht_1d(double* vec, double* H, int N) {
     if (H == NULL) {
         return NULL;
@@ -240,29 +256,38 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
 
 // Function for inverse 2D DWHT (Octave version)
 double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M) {
-    double* Hm = hadamard(M);
-    if (Hm == NULL) {
-        return NULL;
-    }
 
     double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
     if (transformed_matrix == NULL) {
-        perror("Failed to allocate memory for transformed matrix");
-        free(Hm);
+        perror("Failed to allocate memory for transformed matrix");        
         return NULL;
     }
 
-    // Perform Hm' * X
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            transformed_matrix[i * M + j] = 0.0;
-            for (int k = 0; k < M; k++) {
-                transformed_matrix[i * N + j] += Hm[k * M + i] * matrix[k * N + j];
-            }
-        }
-    }
+    for(int i = 0; i < N; i++) {
+        double* column_vector = (double*)malloc(M * sizeof(double));
 
-    free(Hm);
+        if (column_vector == NULL) {
+            perror("Failed to allocate memory for column vector");
+            return NULL;
+        }
+        for(int j = 0; j < M; j++) {
+            column_vector[j] = matrix[j*N + i];
+        }
+
+        double* transformed_column_vector = dwht_1d(column_vector, M);
+        
+        if (transformed_column_vector == NULL) {
+            free(column_vector);
+            return NULL;
+        }
+        
+        for (int j = 0; j < M; j++) {
+            transformed_matrix[j*N + i] = transformed_column_vector[j];
+        }
+        free(transformed_column_vector);
+        free(column_vector);
+    }
+    
     return transformed_matrix;
 }
 double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K) {

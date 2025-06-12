@@ -11,6 +11,17 @@ struct  complex {
 #endif
 
 
+/**
+ * @brief Calculates the difference between two matrices.
+ *
+ * @param matrixA A pointer to the first matrix (N x M).
+ * @param matrixB A pointer to the second matrix (N x M).
+ * @param N The number of rows in the matrices.
+ * @param M The number of columns in the matrices.  
+ * @return A result of the subtraction of matrixB from matrixA (N x M).
+ */
+double* diff(double *matrixA, double* matrixB, int N, int M);
+
 double* dwht_1d(double* vec, int N);
 double* dwht_1d_inverse(double* vec, int N);
 
@@ -33,8 +44,8 @@ double* dwht_2d_octave(double* matrix, int N, int M);
  * @brief Function for 2D DWHT for the High level implementation for Hm' * X_tf',
  *  where Hm is the Hadamard matrix of size M
  * @param matrix A pointer to the input matrix (represented as a 1D array in row-major order).
- * @param N The number of rows in the matrix. Must be a power of 2.
- * @param M The number of columns in the matrix. Must be a power of 2.
+ * @param N The number of columns in the matrix. Must be a power of 2.
+ * @param M The number of rows in the matrix. Must be a power of 2.
  * @return A pointer to the modified matrix (same as the input pointer).
  *
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
@@ -62,8 +73,8 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M);
  * @brief Function for 2D DWHT for the Low level implementation for Hm' * X_tf',
  *  where Hm is the Hadamard matrix of size M
  * @param matrix A pointer to the input matrix (represented as a 1D array in row-major order).
- * @param N The number of rows in the matrix. Must be a power of 2.
- * @param M The number of columns in the matrix. Must be a power of 2.
+ * @param N The number of columns in the matrix. Must be a power of 2.
+ * @param M The number of rows in the matrix. Must be a power of 2.
  * @return A pointer to the modified matrix (same as the input pointer).
  *
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
