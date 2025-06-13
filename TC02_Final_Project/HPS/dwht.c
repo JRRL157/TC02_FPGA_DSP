@@ -58,6 +58,74 @@ double* diff(double *matrixA, double* matrixB, int N, int M) {
     return result;
 }
 
+void __dwht_1D_radix2(double* vec, int N) {
+    if (N != 2) {
+        printf("Error: N must be 2 for this function. \n");
+        return NULL;
+    }
+
+    double temp = vec[0];
+    vec[0] = vec[0] + vec[1];
+    vec[1] = temp - vec[1];
+}
+
+void __dwht_1D_N4(double *vec, int N) {
+    if (N != 4) {
+        printf("Error: N must be 4!\n");
+        return NULL;
+    }
+
+    double* temp_vec = (double*)malloc(N * sizeof(double));
+    if (temp_vec == NULL) {
+        perror("Failed to allocate memory for transformed vector");
+        return NULL;
+    }
+
+    for (int i = 0; i < N; i++) {
+        temp_vec[i] = vec[i];
+    }
+
+    // First layer
+    vec[0] = temp_vec[0] + temp_vec[2];
+    vec[2] = temp_vec[0] - temp_vec[2];
+    vec[1] = temp_vec[1] + temp_vec[3];
+    vec[3] = temp_vec[1] - temp_vec[3];
+
+    // Second layer
+    __dwht_1D_radix2(vec, 2);
+    __dwht_1D_radix2((double*)(vec + 2*(sizeof(double))), 2);
+}
+
+void __dwht_1D_N8(double *vec, int N) {
+    if (N != 8) {
+        printf("Error: N must be 8!\n");
+        return NULL;
+    }
+    
+    double* aux = (double*)malloc(N * sizeof(double));
+    if (aux == NULL) {
+        perror("Failed to allocate memory for auxiliary vector");
+        return NULL;
+    }
+    for (int i = 0; i < N; i++) {
+        aux[i] = vec[i];
+    }
+
+    // First layer
+    vec[0] = aux[0] + aux[4];
+    vec[4] = aux[0] - aux[4];
+    vec[1] = aux[1] + aux[5];
+    vec[5] = aux[1] - aux[5];
+    vec[2] = aux[2] + aux[6];
+    vec[6] = aux[2] - aux[6];
+    vec[3] = aux[3] + aux[7];
+    vec[7] = aux[3] - aux[7];
+
+    // Next layers 
+    __dwht_1D_N4(vec, 4);
+    __dwht_1D_N4((double*)(vec + 4*sizeof(double)), 4);
+}
+
 double* __dwht_1d(double* vec, double* H, int N) {
     if (H == NULL) {
         return NULL;
@@ -165,29 +233,17 @@ double* dwht_2d_inverse_octave(double* matrix, int N, int M) {
 // Hm*X*Hn'
 // where Hm and Hn are Hadamard matrices of size N and M respectively
 double* dwht_2d_octave_ll(double* matrix, int N, int M) {
-    double* Hm = hadamard(N);
-    double* Hn = hadamard(M);
-
-    if (Hm == NULL || Hn == NULL) {
-        if (Hm != NULL) free(Hm);
-        if (Hn != NULL) free(Hn);
-        return NULL;
-    }
 
     double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
      if (transformed_matrix == NULL) {
-        perror("Failed to allocate memory for transformed matrix");
-        free(Hm);
-        free(Hn);
+        perror("Failed to allocate memory for transformed matrix");        
         return NULL;
     }
 
     // Perform Hm * X * Hn'
     double* temp_matrix = (double*)malloc(N * M * sizeof(double));
     if (temp_matrix == NULL) {
-        perror("Failed to allocate memory for temporary matrix");
-        free(Hm);
-        free(Hn);
+        perror("Failed to allocate memory for temporary matrix");        
         return NULL;
     }
 
@@ -196,18 +252,18 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
         double* row = (double*)malloc(M * sizeof(double));
         if (row == NULL) {
             perror("Failed to allocate memory for row");
-            free(Hm);
-            free(Hn);
             free(temp_matrix);
             return NULL;
         }
+
         for (int j = 0; j < M; j++) {
             row[j] = matrix[i * M + j];
         }
+
+        // Apply 1D DWHT to the row
         double* transformed_row = dwht_1d(row, M);
+
         if (transformed_row == NULL) {
-            free(Hm);
-            free(Hn);
             free(temp_matrix);
             free(row);
             return NULL;
@@ -222,20 +278,20 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
     // Apply DWHT to each column of the temporary matrix
     for (int j = 0; j < M; j++) {
         double* col = (double*)malloc(N * sizeof(double));
+
         if (col == NULL) {
             perror("Failed to allocate memory for column");
-            free(Hm);
-            free(Hn);
             free(temp_matrix);
             return NULL;
         }
         for (int i = 0; i < N; i++) {
             col[i] = temp_matrix[i * M + j];
         }
+        
+        //Apply 1D DWHT to the column
         double* transformed_col = dwht_1d(col, N);
+
         if (transformed_col == NULL) {
-            free(Hm);
-            free(Hn);
             free(temp_matrix);
             free(col);
             return NULL;
@@ -248,9 +304,6 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
     }
 
     free(temp_matrix);
-
-    free(Hm);
-    free(Hn);
     return transformed_matrix;
 }
 
@@ -274,7 +327,7 @@ double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M) {
             column_vector[j] = matrix[j*N + i];
         }
 
-        double* transformed_column_vector = dwht_1d(column_vector, M);
+        double* transformed_column_vector = dwht_1d_inverse(column_vector, M);
         
         if (transformed_column_vector == NULL) {
             free(column_vector);

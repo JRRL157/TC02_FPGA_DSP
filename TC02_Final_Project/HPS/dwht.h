@@ -22,6 +22,9 @@ struct  complex {
  */
 double* diff(double *matrixA, double* matrixB, int N, int M);
 
+
+double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K);
+
 double* dwht_1d(double* vec, int N);
 double* dwht_1d_inverse(double* vec, int N);
 
@@ -83,9 +86,7 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M);
 double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M);
 
 /**
- * @brief Multiplies two matrices.
- *
- * This function multiplies two matrices, matrixA and matrixB, and returns the resulting matrix.
+ * @brief This function multiplies two matrices, matrixA and matrixB, and returns the resulting matrix.
  *
  * @param matrixA A pointer to the first matrix (N x M).
  * @param matrixB A pointer to the second matrix (M x K).
