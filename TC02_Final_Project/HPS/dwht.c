@@ -75,21 +75,21 @@ void __dwht_1D_N4(double *vec, int N) {
         return NULL;
     }
 
-    double* temp_vec = (double*)malloc(N * sizeof(double));
-    if (temp_vec == NULL) {
+    double* aux = (double*)malloc(N * sizeof(double));
+    if (aux == NULL) {
         perror("Failed to allocate memory for transformed vector");
         return NULL;
     }
 
     for (int i = 0; i < N; i++) {
-        temp_vec[i] = vec[i];
+        aux[i] = vec[i];
     }
 
     // First layer
-    vec[0] = temp_vec[0] + temp_vec[2];
-    vec[2] = temp_vec[0] - temp_vec[2];
-    vec[1] = temp_vec[1] + temp_vec[3];
-    vec[3] = temp_vec[1] - temp_vec[3];
+    vec[0] = aux[0] + aux[2];
+    vec[2] = aux[0] - aux[2];
+    vec[1] = aux[1] + aux[3];
+    vec[3] = aux[1] - aux[3];
 
     // Second layer
     __dwht_1D_radix2(vec, 2);
@@ -124,6 +124,97 @@ void __dwht_1D_N8(double *vec, int N) {
     // Next layers 
     __dwht_1D_N4(vec, 4);
     __dwht_1D_N4((double*)(vec + 4*sizeof(double)), 4);
+}
+
+void __dwht_1D_N16(double *vec, int N) {
+    if (N != 16) {
+        printf("Error: N must be 16!\n");
+        return NULL;
+    }
+
+    double* aux = (double*)malloc(N * sizeof(double));
+    if (aux == NULL) {
+        perror("Failed to allocate memory for auxiliary vector");
+        return NULL;
+    }
+    for (int i = 0; i < N; i++) {
+        aux[i] = vec[i];
+    }
+
+    // First layer
+    vec[0] = aux[0] + aux[8];
+    vec[8] = aux[0] - aux[8];
+    vec[1] = aux[1] + aux[9];
+    vec[9] = aux[1] - aux[9];
+    vec[2] = aux[2] + aux[10];
+    vec[10] = aux[2] - aux[10];
+    vec[3] = aux[3] + aux[11];
+    vec[11] = aux[3] - aux[11];
+    vec[4] = aux[4] + aux[12];
+    vec[12] = aux[4] - aux[12];
+    vec[5] = aux[5] + aux[13];
+    vec[13] = aux[5] - aux[13];
+    vec[6] = aux[6] + aux[14];
+    vec[14] = aux[6] - aux[14];
+    vec[7] = aux[7] + aux[15];
+    vec[15] = aux[7] - aux[15];
+
+    // Next layers 
+    __dwht_1D_N8(vec, 8);
+    __dwht_1D_N8((double*)(vec + 8*sizeof(double)), 8);
+}
+
+void __dwht_1D_N32(double *vec, int N) {
+    if (N != 32) {
+        printf("Error: N must be 32!\n");
+        return NULL;
+    }
+
+    double* aux = (double*)malloc(N * sizeof(double));
+    if (aux == NULL) {
+        perror("Failed to allocate memory for auxiliary vector");
+        return NULL;
+    }
+    for (int i = 0; i < N; i++) {
+        aux[i] = vec[i];
+    }
+
+    // First layer
+    vec[0] = aux[0] + aux[16];
+    vec[16] = aux[0] - aux[16];
+    vec[1] = aux[1] + aux[17];
+    vec[17] = aux[1] - aux[17];
+    vec[2] = aux[2] + aux[18];
+    vec[18] = aux[2] - aux[18];
+    vec[3] = aux[3] + aux[19];
+    vec[19] = aux[3] - aux[19];
+    vec[4] = aux[4] + aux[20];
+    vec[20] = aux[4] - aux[20];
+    vec[5] = aux[5] + aux[21];
+    vec[21] = aux[5] - aux[21];
+    vec[6] = aux[6] + aux[22];
+    vec[22] = aux[6] - aux[22];
+    vec[7] = aux[7] + aux[23];
+    vec[23] = aux[7] - aux[23];
+    vec[8] = aux[8] + aux[24];
+    vec[24] = aux[8] - aux[24];
+    vec[9] = aux[9] + aux[25];
+    vec[25] = aux[9] - aux[25];
+    vec[10] = aux[10] + aux[26];
+    vec[26] = aux[10] - aux[26];
+    vec[11] = aux[11] + aux[27];
+    vec[27] = aux[11] - aux[27];
+    vec[12] = aux[12] + aux[28];
+    vec[28] = aux[12] - aux[28];
+    vec[13] = aux[13] + aux[29];
+    vec[14] = aux[14] + aux[30];
+    vec[30] = aux[14] - aux[30];
+    vec[15] = aux[15] + aux[31];
+    vec[31] = aux[15] - aux[31];
+
+    // Next layers
+    __dwht_1D_N16(vec, 16);
+    __dwht_1D_N16((double*)(vec + 16*sizeof(double)), 16);
 }
 
 double* __dwht_1d(double* vec, double* H, int N) {
