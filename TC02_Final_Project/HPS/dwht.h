@@ -4,10 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-struct  complex {
-    float R;
-    float I;
-};
+#include <string.h>
+
 #endif
 
 
@@ -22,10 +20,38 @@ struct  complex {
  */
 double* diff(double *matrixA, double* matrixB, int N, int M);
 
-
 double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K);
 
+
+/**
+ * @brief Performs a 1-dimensional Discrete Walsh-Hadamard Transform (DWHT) on the input data.
+ *
+ * This function computes the DWHT of the input array using an iterative approach.
+ * The DWHT is a transform used in signal processing and data compression.
+ *
+ * @param data Pointer to the input array containing the data to be transformed.
+ *             The array is modified in-place to contain the transformed data.
+ * @param n The size of the input array. Must be a power of 2.
+ *
+ * @note The input array size must be a power of 2 for the transform to work correctly.
+ *       Ensure that the input data is properly allocated and initialized before calling this function.
+ */
 double* dwht_1d(double* vec, int N);
+
+/**
+ * @brief Performs a 1-dimensional Fast Walsh-Hadamard Transform (FWHT) on the input data.
+ *
+ * This function computes the DWHT of the input array using an iterative approach.
+ * The FWHT is a fast transform used in signal processing and data compression.
+ *
+ * @param data Pointer to the input array containing the data to be transformed.
+ *             The array is modified in-place to contain the transformed data.
+ * @param n The size of the input array. Must be a power of 2.
+ *
+ * @note The input array size must be a power of 2 for the transform to work correctly.
+ *       Ensure that the input data is properly allocated and initialized before calling this function.
+ */
+double* fwht_1d(double* vec, int N);
 double* dwht_1d_inverse(double* vec, int N);
 
 /**

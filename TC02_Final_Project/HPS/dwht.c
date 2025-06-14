@@ -58,163 +58,50 @@ double* diff(double *matrixA, double* matrixB, int N, int M) {
     return result;
 }
 
-void __dwht_1D_radix2(double* vec, int N) {
-    if (N != 2) {
-        printf("Error: N must be 2 for this function. \n");
-        return NULL;
+void __fwht_1D(double* vec_ptr, int N) {
+    if (N == 1) {
+        return; // Base case, nothing to do
     }
 
-    double temp = vec[0];
-    vec[0] = vec[0] + vec[1];
-    vec[1] = temp - vec[1];
+    if (N <= 0 || (N & (N - 1)) != 0) {
+        printf("Error: N must be a power of 2 and greater than zero.\n");
+        return;
+    }
+
+    double aux[N];
+
+    for (int i = 0; i < N; i++) {
+        aux[i] = vec_ptr[i];
+    }
+
+    // Current stage
+    int N_half = N / 2;
+    for(int i = 0; i < N_half; i++) {
+        vec_ptr[i] = aux[i] + aux[i + N_half];
+        vec_ptr[i + N_half] = aux[i] - aux[i + N_half];
+    }
+
+    // Next (log2(N) - 1) stages
+    __fwht_1D(vec_ptr, N_half);
+    __fwht_1D(vec_ptr + N_half, N_half);
 }
 
-void __dwht_1D_N4(double *vec, int N) {
-    if (N != 4) {
-        printf("Error: N must be 4!\n");
+double* fwht_1d(double* vec, int N) {
+    if (N <= 0 || (N & (N-1)) != 0) {
+        printf("Error: N must be a power of 2 and greater than zero.\n");
         return NULL;
     }
 
-    double* aux = (double*)malloc(N * sizeof(double));
-    if (aux == NULL) {
+    double* transformed_vec = (double*)malloc(N * sizeof(double));
+    if (transformed_vec == NULL) {
         perror("Failed to allocate memory for transformed vector");
         return NULL;
     }
+    memcpy(transformed_vec, vec, N * sizeof(double));
 
-    for (int i = 0; i < N; i++) {
-        aux[i] = vec[i];
-    }
+    __fwht_1D(transformed_vec, N);
 
-    // First layer
-    vec[0] = aux[0] + aux[2];
-    vec[2] = aux[0] - aux[2];
-    vec[1] = aux[1] + aux[3];
-    vec[3] = aux[1] - aux[3];
-
-    // Second layer
-    __dwht_1D_radix2(vec, 2);
-    __dwht_1D_radix2((double*)(vec + 2*(sizeof(double))), 2);
-}
-
-void __dwht_1D_N8(double *vec, int N) {
-    if (N != 8) {
-        printf("Error: N must be 8!\n");
-        return NULL;
-    }
-    
-    double* aux = (double*)malloc(N * sizeof(double));
-    if (aux == NULL) {
-        perror("Failed to allocate memory for auxiliary vector");
-        return NULL;
-    }
-    for (int i = 0; i < N; i++) {
-        aux[i] = vec[i];
-    }
-
-    // First layer
-    vec[0] = aux[0] + aux[4];
-    vec[4] = aux[0] - aux[4];
-    vec[1] = aux[1] + aux[5];
-    vec[5] = aux[1] - aux[5];
-    vec[2] = aux[2] + aux[6];
-    vec[6] = aux[2] - aux[6];
-    vec[3] = aux[3] + aux[7];
-    vec[7] = aux[3] - aux[7];
-
-    // Next layers 
-    __dwht_1D_N4(vec, 4);
-    __dwht_1D_N4((double*)(vec + 4*sizeof(double)), 4);
-}
-
-void __dwht_1D_N16(double *vec, int N) {
-    if (N != 16) {
-        printf("Error: N must be 16!\n");
-        return NULL;
-    }
-
-    double* aux = (double*)malloc(N * sizeof(double));
-    if (aux == NULL) {
-        perror("Failed to allocate memory for auxiliary vector");
-        return NULL;
-    }
-    for (int i = 0; i < N; i++) {
-        aux[i] = vec[i];
-    }
-
-    // First layer
-    vec[0] = aux[0] + aux[8];
-    vec[8] = aux[0] - aux[8];
-    vec[1] = aux[1] + aux[9];
-    vec[9] = aux[1] - aux[9];
-    vec[2] = aux[2] + aux[10];
-    vec[10] = aux[2] - aux[10];
-    vec[3] = aux[3] + aux[11];
-    vec[11] = aux[3] - aux[11];
-    vec[4] = aux[4] + aux[12];
-    vec[12] = aux[4] - aux[12];
-    vec[5] = aux[5] + aux[13];
-    vec[13] = aux[5] - aux[13];
-    vec[6] = aux[6] + aux[14];
-    vec[14] = aux[6] - aux[14];
-    vec[7] = aux[7] + aux[15];
-    vec[15] = aux[7] - aux[15];
-
-    // Next layers 
-    __dwht_1D_N8(vec, 8);
-    __dwht_1D_N8((double*)(vec + 8*sizeof(double)), 8);
-}
-
-void __dwht_1D_N32(double *vec, int N) {
-    if (N != 32) {
-        printf("Error: N must be 32!\n");
-        return NULL;
-    }
-
-    double* aux = (double*)malloc(N * sizeof(double));
-    if (aux == NULL) {
-        perror("Failed to allocate memory for auxiliary vector");
-        return NULL;
-    }
-    for (int i = 0; i < N; i++) {
-        aux[i] = vec[i];
-    }
-
-    // First layer
-    vec[0] = aux[0] + aux[16];
-    vec[16] = aux[0] - aux[16];
-    vec[1] = aux[1] + aux[17];
-    vec[17] = aux[1] - aux[17];
-    vec[2] = aux[2] + aux[18];
-    vec[18] = aux[2] - aux[18];
-    vec[3] = aux[3] + aux[19];
-    vec[19] = aux[3] - aux[19];
-    vec[4] = aux[4] + aux[20];
-    vec[20] = aux[4] - aux[20];
-    vec[5] = aux[5] + aux[21];
-    vec[21] = aux[5] - aux[21];
-    vec[6] = aux[6] + aux[22];
-    vec[22] = aux[6] - aux[22];
-    vec[7] = aux[7] + aux[23];
-    vec[23] = aux[7] - aux[23];
-    vec[8] = aux[8] + aux[24];
-    vec[24] = aux[8] - aux[24];
-    vec[9] = aux[9] + aux[25];
-    vec[25] = aux[9] - aux[25];
-    vec[10] = aux[10] + aux[26];
-    vec[26] = aux[10] - aux[26];
-    vec[11] = aux[11] + aux[27];
-    vec[27] = aux[11] - aux[27];
-    vec[12] = aux[12] + aux[28];
-    vec[28] = aux[12] - aux[28];
-    vec[13] = aux[13] + aux[29];
-    vec[14] = aux[14] + aux[30];
-    vec[30] = aux[14] - aux[30];
-    vec[15] = aux[15] + aux[31];
-    vec[31] = aux[15] - aux[31];
-
-    // Next layers
-    __dwht_1D_N16(vec, 16);
-    __dwht_1D_N16((double*)(vec + 16*sizeof(double)), 16);
+    return transformed_vec;
 }
 
 double* __dwht_1d(double* vec, double* H, int N) {
@@ -256,7 +143,7 @@ double* dwht_1d_inverse(double* vec, int N) {
     double* H = hadamard(N);
     double* Ht = transpose(H, N, N);
     free(H);
-    
+
     if (H == NULL) {
         return NULL;
     }
@@ -314,7 +201,7 @@ double* dwht_2d_inverse_octave(double* matrix, int N, int M) {
         free(Hm);
         return NULL;
     }
-    
+
     double *result_matrix = multiply_matrices(HmT, matrix, M, M, N);
 
     return result_matrix;
@@ -332,69 +219,54 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
     }
 
     // Perform Hm * X * Hn'
-    double* temp_matrix = (double*)malloc(N * M * sizeof(double));
-    if (temp_matrix == NULL) {
-        perror("Failed to allocate memory for temporary matrix");        
-        return NULL;
-    }
+    double temp_matrix[N*M];
 
     // Apply DWHT to each row
+    double row[M];
     for (int i = 0; i < N; i++) {
-        double* row = (double*)malloc(M * sizeof(double));
-        if (row == NULL) {
-            perror("Failed to allocate memory for row");
-            free(temp_matrix);
-            return NULL;
-        }
 
         for (int j = 0; j < M; j++) {
             row[j] = matrix[i * M + j];
         }
 
         // Apply 1D DWHT to the row
-        double* transformed_row = dwht_1d(row, M);
+        //double* transformed_row = dwht_1d(row, M);
+        double* transformed_row = fwht_1d(row, M);
 
         if (transformed_row == NULL) {
-            free(temp_matrix);
-            free(row);
+            free(transformed_row);
             return NULL;
         }
         for (int j = 0; j < M; j++) {
             temp_matrix[i * M + j] = transformed_row[j];
         }
-        free(row);
+        // free(row);
         free(transformed_row);
     }
 
     // Apply DWHT to each column of the temporary matrix
+    double col[N];
     for (int j = 0; j < M; j++) {
-        double* col = (double*)malloc(N * sizeof(double));
 
-        if (col == NULL) {
-            perror("Failed to allocate memory for column");
-            free(temp_matrix);
-            return NULL;
-        }
         for (int i = 0; i < N; i++) {
             col[i] = temp_matrix[i * M + j];
         }
         
         //Apply 1D DWHT to the column
-        double* transformed_col = dwht_1d(col, N);
+        //double* transformed_col = dwht_1d(col, N);
+        double* transformed_col = fwht_1d(col, N);
 
         if (transformed_col == NULL) {
-            free(temp_matrix);
-            free(col);
+            free(transformed_col);
             return NULL;
         }
         for (int i = 0; i < N; i++) {
             transformed_matrix[i * M + j] = transformed_col[i];
         }
-        free(col);
+
         free(transformed_col);
     }
 
-    free(temp_matrix);
     return transformed_matrix;
 }
 
@@ -402,26 +274,23 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M) {
 double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M) {
 
     double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
-    if (transformed_matrix == NULL) {
+     if (transformed_matrix == NULL) {
         perror("Failed to allocate memory for transformed matrix");        
         return NULL;
     }
 
+    double column_vector[M];
     for(int i = 0; i < N; i++) {
-        double* column_vector = (double*)malloc(M * sizeof(double));
 
-        if (column_vector == NULL) {
-            perror("Failed to allocate memory for column vector");
-            return NULL;
-        }
         for(int j = 0; j < M; j++) {
             column_vector[j] = matrix[j*N + i];
         }
 
-        double* transformed_column_vector = dwht_1d_inverse(column_vector, M);
+        //double* transformed_column_vector = dwht_1d_inverse(column_vector, M);
+        double* transformed_column_vector = fwht_1d(column_vector, M);
         
         if (transformed_column_vector == NULL) {
-            free(column_vector);
+            free(transformed_column_vector);
             return NULL;
         }
         
@@ -429,9 +298,8 @@ double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M) {
             transformed_matrix[j*N + i] = transformed_column_vector[j];
         }
         free(transformed_column_vector);
-        free(column_vector);
     }
-    
+
     return transformed_matrix;
 }
 double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K) {
