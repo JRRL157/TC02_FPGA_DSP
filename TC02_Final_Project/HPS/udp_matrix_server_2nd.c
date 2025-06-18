@@ -53,7 +53,7 @@ int main() {
             continue;
         }
 
-        printf("Received %d bytes from %s:%d\n", n_bytes,inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+        printf("Received %d bytes from %s:%d\n", n_bytes, inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
         double *received_data = (double *)buffer;
 
@@ -69,7 +69,14 @@ int main() {
         }
 
         //Getting matrix data
-        float *matrix = (float *)(buffer + 3 * sizeof(double));
+        //float *matrix = (float *)(received_data + 3 * sizeof(double));
+        float matrix[rows*cols];
+
+        for(int i = 0;i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                matrix[i * cols + j] = (float)received_data[3 + i * cols + j];
+            }
+        }
 
         print_matrix(matrix, rows, cols, "UDP Received matrix");
 
@@ -83,11 +90,11 @@ int main() {
                 break;
             case 2: // DWHT 1D Low Level
                 processed_matrix = dwht_2d_inverse_octave_ll(matrix, rows, cols);
-                float* debug_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
-                float* error_matrix = diff(processed_matrix, debug_matrix, rows, cols);
-                char *error_matrix_name = "Error Matrix";
-                print_matrix(error_matrix, rows, cols, error_matrix_name);
-                free(debug_matrix);
+                //float* debug_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
+                //float* error_matrix = diff(processed_matrix, debug_matrix, rows, cols);
+                //char *error_matrix_name = "Error Matrix";
+                //print_matrix(error_matrix, rows, cols, error_matrix_name);
+                //free(debug_matrix);
                 break;
             case 3: // DWHT 2D Low Level
                 processed_matrix = dwht_2d_octave_ll(matrix, rows, cols);                
@@ -104,7 +111,13 @@ int main() {
 
         //print_matrix(p_matrix, rows, cols);
         // Convert the processed matrix to double
-        double *processed_matrix_double = (double *)processed_matrix;
+        double processed_matrix_double[rows * cols];
+
+        for(int i = 0;i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                processed_matrix_double[i * cols + j] = (double)processed_matrix[i * cols + j];
+            }
+        }
 
         if (sendto(sockfd, processed_matrix_double, n_bytes, 0, (const struct sockaddr *)&client_addr, client_addr_len) < 0) {
             perror("Send failed");
