@@ -59,8 +59,8 @@ int main() {
 
         // First two doubles sent by Octave are the dimensions (rows and columns) of the matrix
         int cmd = (int)received_data[0];
-        int rows = (int)received_data[1];
-        int cols = (int)received_data[2];
+        int cols = (int)received_data[1];
+        int rows = (int)received_data[2];
 
         // Validate matrix dimensions
         if (rows <= 0 || cols <= 0 || rows > MAX_MATRIX_DIMENSION || cols > MAX_MATRIX_DIMENSION || (rows * cols * sizeof(double) + 2 * sizeof(double)) > n_bytes) {
@@ -71,7 +71,7 @@ int main() {
         //Getting matrix data
         double *matrix = (double *)(buffer + 3 * sizeof(double));
 
-        //print_matrix(matrix, rows, cols);
+        print_matrix(matrix, rows, cols, "UDP Received matrix");
 
         double* processed_matrix = NULL;
         switch(cmd) {
