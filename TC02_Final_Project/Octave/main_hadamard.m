@@ -51,17 +51,17 @@ BER_values = zeros(length(mod_schemes), length(SNR_values));
 
 % Define selected (N, M, spd, fc, delta_f) tuples
 simulation_params = [
-    16, 16, 500, 6e9, 30e3; %[1]
+    %16, 16, 500, 6e9, 30e3; %[1]
 
-    8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
-    %8, 64, 50, 60e9, 78125;%BW=5MHz, [2]
-    8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
-    %8, 64, 50, 60e9, 625e3;%BW=40MHz, [2]
-    8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
-    %8, 64, 50, 60e9, 1.875e6; %BW=120MHz, [2]
+    %8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
+    8, 64, 50, 60e9, 78125;%BW=5MHz, [2]
+    %8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
+    8, 64, 50, 60e9, 625e3;%BW=40MHz, [2]
+    %8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
+    8, 64, 50, 60e9, 1.875e6; %BW=120MHz, [2]
 
-    %16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
-    %4, 128, 300, 5.9e9, 78.125e3;%BW=10MHz [3]
+    16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
+    4, 128, 300, 5.9e9, 78.125e3;%BW=10MHz [3]
 ];
 
 for idx = 1:size(simulation_params)
@@ -146,22 +146,22 @@ for idx = 1:size(simulation_params)
         BER_values(BER_values == 0) = 1e-10;
 
         % Use a stable renderer
-        set(gcf, 'renderer', 'painters'); % Or use graphics_toolkit('gnuplot');
+        %set(gcf, 'renderer', 'painters'); % Or use graphics_toolkit('gnuplot');
 
         % Plot BER vs. SNR
-        fig = figure('visible', 'off');
-        hold on;
-        for type = 1:length(mod_schemes) % Adjust loop range to valid indices
-            semilogy(SNR_values, BER_values(type, :), '-o', 'LineWidth', 1.5, 'DisplayName', mod_schemes{type});
-        end
-        grid on;
-        set(gca, 'YScale', 'log');
-        xlabel('SNR (dB)');
-        ylabel(sprintf('BER - [%d QAM, %s Channel Model]', mod_size, channel_model_name));
-        legend('show');
-        title(plot_title);
-        dateAndTime = datestr(now(), 'yyyy_mmmm_dd_HH-MM-SS');
-        fname = sprintf('%s%s_%s_%d-QAM.png', directory, dateAndTime, channel_model_name, mod_size);
-        print(fname, '-dpng', '-r300'); % Save as PNG with 300 DPI resolution
+        %fig = figure('visible', 'off');
+        %hold on;
+        %for type = 1:length(mod_schemes) % Adjust loop range to valid indices
+        %    semilogy(SNR_values, BER_values(type, :), '-o', 'LineWidth', 1.5, 'DisplayName', mod_schemes{type});
+        %end
+        %grid on;
+        %set(gca, 'YScale', 'log');
+        %xlabel('SNR (dB)');
+        %ylabel(sprintf('BER - [%d QAM, %s Channel Model]', mod_size, channel_model_name));
+        %legend('show');
+        %title(plot_title);
+        %dateAndTime = datestr(now(), 'yyyy_mmmm_dd_HH-MM-SS');
+        %fname = sprintf('%s%s_%s_%d-QAM.png', directory, dateAndTime, channel_model_name, mod_size);
+        %print(fname, '-dpng', '-r300'); % Save as PNG with 300 DPI resolution
     end
 end

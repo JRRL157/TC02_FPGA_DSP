@@ -1,5 +1,5 @@
 function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, delays_arr, pdp_arr)
-  ip_addr = "10.42.0.23"
+  ip_addr = "127.0.0.1"
   port = 5005;
 
   Hn = hadamard(N);
@@ -35,17 +35,20 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
     end
   end
 
-  X_tf_ideal = Hm*X*Hn';%TODO: UPDATE
-  disp(X);
+  
+  %disp(X);
   X_tf_r = udp_dwht(3, ip_addr, port, real(X));
   X_tf_i = udp_dwht(3, ip_addr, port, imag(X));
-  X_tf = X_tf_r + (X_tf_i * 1i);  
+  X_tf = X_tf_r + (X_tf_i * 1i);
+  X_tf_ideal = Hm*X*Hn';
+  disp(X_tf_ideal - X_tf);
   
-  X_til_ideal = Hm' * X_tf; %TODO: UPDATE
-  X_til_r = udp_dwht(2, ip_addr, port, X_tf_r);
-  X_til_i = udp_dwht(2, ip_addr, port, X_tf_i);
+  %X_til_ideal = Hm' * X_tf;
+  %disp(X_tf);
+  X_til_r = udp_dwht(2, ip_addr, port, real(X_tf));
+  X_til_i = udp_dwht(2, ip_addr, port, imag(X_tf));
   X_til = X_til_r + (X_til_i * 1i);
-  disp(X_til);
+  %disp(X_til);
 
   s = reshape(X_til, 1, N*M);
 
@@ -102,8 +105,17 @@ function [x, x_hat2] = otfs_hadamard(N, M, spd, fc, delta_f, SNR_db, mod_size, d
 
   % OTFS demodulation
   Y_til = reshape(r, M, N);
-  Y_tf = Hm * Y_til;%TODO: UPDATE
-  Y = Hm' * Y_tf * Hn;%TODO: UPDATE
+  %Y_tf = Hm * Y_til;
+  disp(Y_til);
+  Y_tf_r = udp_dwht(2, ip_addr, port, real(Y_til));
+  Y_tf_i = udp_dwht(2, ip_addr, port, imag(Y_til));
+  Y_tf = Y_tf_r + (Y_tf_i * 1i);
+
+  %Y = Hm' * Y_tf * Hn;
+  disp(Y_tf);
+  Y_r = udp_dwht(3, ip_addr, port, real(Y_tf));
+  Y_i = udp_dwht(3, ip_addr, port, imag(Y_tf));
+  Y = Y_r + (Y_i * 1i);
 
   % OTFS delay-doppler LMMSE detection
   y = reshape(Y.', N*M, 1);
