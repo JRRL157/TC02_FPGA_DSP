@@ -10,3 +10,11 @@ Date: 2025_June_17_22-05-44: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR
 Date: 2025_June_18_04-01-59: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR: 10.000000, BER: 7.500698e-01
 Date: 2025_June_18_04-15-29: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR: 10.000000, BER: 7.506961e-01
 Date: 2025_June_18_04-19-50: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR: 10.000000, BER: 7.499448e-01
+Date: 2025_June_18_08-20-16: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR: 10.000000, BER: 5.503906e-03
+Date: 2025_June_18_08-22-11: ,Scenario Index: 1, Type: 1, Modulation: 4-QAM, SNR: 20.000000, BER: 3.906250e-06
+Date: 2025_June_18_08-23-35: ,Scenario Index: 1, Type: 2, Modulation: 4-QAM, SNR: 10.000000, BER: 6.865234e-02
+Date: 2025_June_18_08-24-59: ,Scenario Index: 1, Type: 2, Modulation: 4-QAM, SNR: 20.000000, BER: 8.437500e-04
+Date: 2025_June_18_08-36-28: ,Scenario Index: 7, Type: 1, Modulation: 4-QAM, SNR: 10.000000, BER: 1.190039e-02
+Date: 2025_June_18_08-47-57: ,Scenario Index: 7, Type: 1, Modulation: 4-QAM, SNR: 20.000000, BER: 1.214844e-03
+Date: 2025_June_18_08-59-38: ,Scenario Index: 7, Type: 2, Modulation: 4-QAM, SNR: 10.000000, BER: 7.450781e-02
+Date: 2025_June_18_09-11-13: ,Scenario Index: 7, Type: 2, Modulation: 4-QAM, SNR: 20.000000, BER: 3.435547e-03
