@@ -3,12 +3,12 @@ function Y = udp_dwht(command, server_ip, server_port, data_matrix)
 
     fopen(u);
 
-    [rows, cols] = size(data_matrix);
+    [cols, rows] = size(data_matrix);
 
     flattened_data = data_matrix'; % Transpose
     flattened_data = flattened_data(:).'; % Flatten row-wise by flattening the transposed matrix
 
-    data_to_send = [command, rows, cols, flattened_data];
+    data_to_send = [command, cols, rows, flattened_data];
 
     fwrite(u, data_to_send, 'double');
 
@@ -23,7 +23,7 @@ function Y = udp_dwht(command, server_ip, server_port, data_matrix)
 
     %Reshape to match the original matrix dimensions
     if ~isempty(response_data)        
-        Y = reshape(response_data, cols, rows).';
+        Y = reshape(response_data, rows, cols).';
     else
         Y = [];
         disp("No data received or an error occurred.");
