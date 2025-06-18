@@ -8,7 +8,6 @@
 
 #endif
 
-
 /**
  * @brief Calculates the difference between two matrices.
  *
@@ -18,9 +17,9 @@
  * @param M The number of columns in the matrices.  
  * @return A result of the subtraction of matrixB from matrixA (N x M).
  */
-double* diff(double *matrixA, double* matrixB, int N, int M);
+float* diff(float *matrixA, float* matrixB, int N, int M);
 
-double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K);
+float* multiply_matrices(float* matrixA, float* matrixB, int N, int M, int K);
 
 
 /**
@@ -36,7 +35,7 @@ double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K)
  * @note The input array size must be a power of 2 for the transform to work correctly.
  *       Ensure that the input data is properly allocated and initialized before calling this function.
  */
-double* dwht_1d(double* vec, int N);
+float* dwht_1d(float* vec, int N);
 
 /**
  * @brief Performs a 1-dimensional Fast Walsh-Hadamard Transform (FWHT) on the input data.
@@ -51,8 +50,8 @@ double* dwht_1d(double* vec, int N);
  * @note The input array size must be a power of 2 for the transform to work correctly.
  *       Ensure that the input data is properly allocated and initialized before calling this function.
  */
-double* fwht_1d(double* vec, int N);
-double* dwht_1d_inverse(double* vec, int N);
+float* fwht_1d(float* vec, int N);
+float* dwht_1d_inverse(float* vec, int N);
 
 /**
  *
@@ -66,7 +65,7 @@ double* dwht_1d_inverse(double* vec, int N);
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
  * @note The dimensions N and M should be powers of 2 for optimal DWHT performance.
  */
-double* dwht_2d_octave(double* matrix, int N, int M);
+float* dwht_2d_octave(float* matrix, int N, int M);
 
 /**
  *
@@ -80,7 +79,7 @@ double* dwht_2d_octave(double* matrix, int N, int M);
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
  * @note The dimensions N and M should be powers of 2 for optimal DWHT performance.
  */
-double* dwht_2d_inverse_octave(double* matrix, int N, int M);
+float* dwht_2d_inverse_octave(float* matrix, int N, int M);
 
 /**
  *
@@ -94,7 +93,7 @@ double* dwht_2d_inverse_octave(double* matrix, int N, int M);
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
  * @note The dimensions N and M should be powers of 2 for optimal DWHT performance.
  */
-double* dwht_2d_octave_ll(double* matrix, int N, int M);
+float* dwht_2d_octave_ll(float* matrix, int N, int M);
 
 
 /**
@@ -109,7 +108,7 @@ double* dwht_2d_octave_ll(double* matrix, int N, int M);
  * @note The function modifies the input matrix directly. Ensure that the matrix is properly allocated and contains valid data before calling this function.
  * @note The dimensions N and M should be powers of 2 for optimal DWHT performance.
  */
-double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M);
+float* dwht_2d_inverse_octave_ll(float* matrix, int N, int M);
 
 /**
  * @brief This function multiplies two matrices, matrixA and matrixB, and returns the resulting matrix.
@@ -122,7 +121,7 @@ double* dwht_2d_inverse_octave_ll(double* matrix, int N, int M);
  *
  * @return A pointer to the resulting matrix (N x K), or NULL if an error occurred.  The caller is responsible for freeing the allocated memory.
  */
-double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K);
+float* multiply_matrices(float* matrixA, float* matrixB, int N, int M, int K);
 
 /**
  * @brief Transposes a given matrix.
@@ -135,4 +134,4 @@ double* multiply_matrices(double* matrixA, double* matrixB, int N, int M, int K)
  * @param M The number of columns in the input matrix.
  * @return A pointer to the transposed matrix (M x N). Returns NULL if memory allocation fails.
  */
-double* transpose(double *matrix, int N, int M);
+float* transpose(float *matrix, int N, int M);
