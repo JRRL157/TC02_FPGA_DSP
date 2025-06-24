@@ -32,11 +32,11 @@ otfs_walsh_str = "otfs_walsh";
 
 mod_schemes = {'OTFS-Hadamard', 'OTFS-Walsh'};
 
-MOD_SIZE = 4;
+MOD_SIZE = 16;
 
 % SNR
 SNR_step = 10; % Incremento de SNR em dB
-SNR_values = 10:SNR_step:20; % Vetor de valores de SNR
+SNR_values = 20:SNR_step:40; % Vetor de valores de SNR
 
 % Number of Iterations
 num = 1000;
@@ -53,15 +53,15 @@ BER_values = zeros(length(mod_schemes), length(SNR_values));
 simulation_params = [
     1, 16, 16, 500, 6e9, 30e3; %[1]
 
-    %2, 8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
-    %3, 8, 64, 50, 60e9, 78125;%BW=5MHz, [2]
-    %4, 8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
-    %5, 8, 64, 50, 60e9, 625e3;%BW=40MHz, [2]
-    %6, 8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
+    2, 8, 8, 50, 60e9, 625000;%BW=5MHz, [2]
+    3, 8, 64, 50, 60e9, 78125;%BW=5MHz, [2]
+    4, 8, 8, 50, 60e9, 5e6;%BW=40MHz, [2]
+    5, 8, 64, 50, 60e9, 625e3;%BW=40MHz, [2]
+    6, 8, 8, 50, 60e9, 15e6; %BW=120MHz, [2]
     7, 8, 64, 50, 60e9, 1.875e6; %BW=120MHz, [2]
 
-    %8, 16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
-    %9, 4, 128, 300, 5.9e9, 78.125e3;%BW=10MHz [3]
+    8, 16, 64, 300, 5.9e9, 78.125e3;%BW=5MHz [3]
+    9, 4, 128, 300, 5.9e9, 78.125e3;%BW=10MHz [3]
 ];
 
 for idx = 1:size(simulation_params)
