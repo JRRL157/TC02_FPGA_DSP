@@ -6,14 +6,14 @@
 
 #define PORT 5016
 #define MAX_MATRIX_DIMENSION 128
-#define MAX_BUFFER_SIZE ((MAX_MATRIX_DIMENSION * MAX_MATRIX_DIMENSION * sizeof(int) * 2) + sizeof(int) * 3)
+#define MAX_BUFFER_SIZE ((MAX_MATRIX_DIMENSION * MAX_MATRIX_DIMENSION * sizeof(double) * 2) + sizeof(double) * 3)
 
-void print_matrix(const int *matrix, int rows, int cols, char *name) {
+void print_matrix(const double *matrix, uint32_t rows, uint32_t cols, char *name) {
     printf("%s matrix (%d x %d): \n", name, rows, cols);
 
-    for(int i = 0; i < rows; ++i) {
-        for (int j = 0; j < cols; ++j) {
-            printf("%d\t", matrix[i * cols + j]);
+    for(uint32_t i = 0; i < rows; ++i) {
+        for (uint32_t j = 0; j < cols; ++j) {
+            printf("%.2f\t", matrix[i * cols + j]);
         }
         printf("\n");
     }
@@ -23,7 +23,7 @@ int main() {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
     char buffer[MAX_BUFFER_SIZE];
-    int n_bytes;
+    uint32_t n_bytes;
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -43,7 +43,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("UDP Matrix Server listening on port %d for binary int data...\n", PORT);
+    printf("UDP Matrix Server listening on port %d for binary double data...\n", PORT);
 
     while (1) {
         n_bytes = recvfrom(sockfd, buffer, MAX_BUFFER_SIZE, 0, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -57,10 +57,10 @@ int main() {
 
         double *received_data = (double *)buffer;
 
-        // First two ints sent by Octave are the dimensions (rows and columns) of the matrix
-        int cmd = (int)received_data[0];
-        int cols = (int)received_data[1];
-        int rows = (int)received_data[2];
+        // First two doubles sent by Octave are the dimensions (rows and columns) of the matrix
+        uint16_t cmd = (uint16_t)received_data[0];
+        uint32_t cols = (uint32_t)received_data[1];
+        uint32_t rows = (uint32_t)received_data[2];
 
         // Validate matrix dimensions
         if (rows <= 0 || cols <= 0 || rows > MAX_MATRIX_DIMENSION || cols > MAX_MATRIX_DIMENSION || (rows * cols * sizeof(double) + 3 * sizeof(double)) > n_bytes) {
@@ -69,18 +69,17 @@ int main() {
         }
 
         //Getting matrix data
-        //int *matrix = (int *)(received_data + 3 * sizeof(double));
-        int matrix[rows * cols];
+        double matrix[rows * cols];
 
-        for(int i = 0;i < rows; ++i) {
-            for (int j = 0; j < cols; ++j) {
-                matrix[i * cols + j] = (int)received_data[3 + i * cols + j];
+        for(uint32_t i = 0;i < rows; ++i) {
+            for (uint32_t j = 0; j < cols; ++j) {
+                matrix[i * cols + j] = (double)received_data[3 + i * cols + j];
             }
         }
 
         print_matrix(matrix, rows, cols, "UDP Received matrix");
 
-        int* processed_matrix = NULL;
+        double* processed_matrix = NULL;
         switch(cmd) {
             case 0: // DWHT 1D
                 processed_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
@@ -90,10 +89,10 @@ int main() {
                 break;
             case 2: // DWHT 1D Low Level
                 processed_matrix = dwht_2d_inverse_octave_ll(matrix, rows, cols);
-                //int* debug_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
-                //int* error_matrix = diff(processed_matrix, debug_matrix, rows, cols);
+                //double* debug_matrix = dwht_2d_inverse_octave(matrix, rows, cols);
+                //double* error_matrix = diff(processed_matrix, debug_matrix, rows, cols);
                 //char *error_matrix_name = "Error Matrix";
-                //print_matrix(error_matrix, rows, cols, error_matrix_name);
+                //prdouble_matrix(error_matrix, rows, cols, error_matrix_name);
                 //free(debug_matrix);
                 break;
             case 3: // DWHT 2D Low Level
@@ -105,16 +104,16 @@ int main() {
         }
 
         if (processed_matrix == NULL) {
-            fprintf(stderr, "Error applying DWHT into matrix.\n");
+            fprintf(stderr, "Error applying DWHT doubleo matrix.\n");
             continue;
         }
 
-        //print_matrix(p_matrix, rows, cols);
+        //prdouble_matrix(p_matrix, rows, cols);
         // Convert the processed matrix to double
         double processed_matrix_double[rows * cols];
 
-        for(int i = 0;i < rows; ++i) {
-            for (int j = 0; j < cols; ++j) {
+        for(uint32_t i = 0;i < rows; ++i) {
+            for (uint32_t j = 0; j < cols; ++j) {
                 processed_matrix_double[i * cols + j] = (double)processed_matrix[i * cols + j];
             }
         }
