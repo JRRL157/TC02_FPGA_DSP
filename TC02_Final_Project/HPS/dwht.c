@@ -1,13 +1,13 @@
 #include "dwht.h"
 
 // Function to generate Hadamard matrix
-double* hadamard(uint32_t n) {
+float* hadamard(uint32_t n) {
     if (n <= 0 || (n & (n - 1)) != 0) {
         printf("Error: n must be a power of 2 and greater than 0.\n");
         return NULL;
     }
 
-    double* H = (double*)malloc(n * n * sizeof(double));
+    float* H = (float*)malloc(n * n * sizeof(float));
     if (H == NULL) {
         perror("Failed to allocate memory for Hadamard matrix");
         return NULL;
@@ -16,7 +16,7 @@ double* hadamard(uint32_t n) {
     // Initialize H[0][0] to 1
     H[0] = 1.0;
 
-    int size = 1;
+    uint32_t size = 1;
     while (size < n) {
         for (uint32_t i = 0; i < size; i++) {
             for (uint32_t j = 0; j < size; j++) {
@@ -30,8 +30,8 @@ double* hadamard(uint32_t n) {
     return H;
 }
 
-double* transpose(double *matrix, uint32_t N, uint32_t M) {
-    double *transposed = (double *)malloc(N * M * sizeof(double));
+float* transpose(float *matrix, uint32_t N, uint32_t M) {
+    float *transposed = (float *)malloc(N * M * sizeof(float));
 
     for (uint32_t i = 0; i < N; i++) {
         for (uint32_t j = 0; j < M; j++) {
@@ -42,8 +42,8 @@ double* transpose(double *matrix, uint32_t N, uint32_t M) {
     return transposed;
 }
 
-double* diff(double *matrixA, double* matrixB, uint32_t N, uint32_t M) {
-    double *result = (double *)malloc(N * M * sizeof(double));
+float* diff(float *matrixA, float* matrixB, uint32_t N, uint32_t M) {
+    float *result = (float *)malloc(N * M * sizeof(float));
     if (result == NULL) {
         perror("Failed to allocate memory for result matrix");
         return NULL;
@@ -58,7 +58,7 @@ double* diff(double *matrixA, double* matrixB, uint32_t N, uint32_t M) {
     return result;
 }
 
-void __fwht_1D(double* vec_ptr, uint32_t N) {
+void __fwht_1D(float* vec_ptr, uint32_t N) {
     if (N == 1) {
         return; // Base case, nothing to do
     }
@@ -68,7 +68,7 @@ void __fwht_1D(double* vec_ptr, uint32_t N) {
         return;
     }
 
-    double aux[N];
+    float aux[N];
 
     for (uint32_t i = 0; i < N; i++) {
         aux[i] = vec_ptr[i];
@@ -86,35 +86,35 @@ void __fwht_1D(double* vec_ptr, uint32_t N) {
     __fwht_1D(vec_ptr + N_half, N_half);
 }
 
-double* fwht_1d(double* vec, uint32_t N) {
+float* fwht_1d(float* vec, uint32_t N) {
     if (N <= 0 || (N & (N-1)) != 0) {
         printf("Error: N must be a power of 2 and greater than zero.\n");
         return NULL;
     }
 
-    double* transformed_vec = (double*)malloc(N * sizeof(double));
+    float* transformed_vec = (float*)malloc(N * sizeof(float));
     if (transformed_vec == NULL) {
         perror("Failed to allocate memory for transformed vector");
         return NULL;
     }
-    memcpy(transformed_vec, vec, N * sizeof(double));
+    memcpy(transformed_vec, vec, N * sizeof(float));
 
     __fwht_1D(transformed_vec, N);
 
     // Applying Normalization
     for (uint32_t i = 0; i < N; i++) {
-        transformed_vec[i] /= sqrt((double)N);
+        transformed_vec[i] /= sqrt((float)N);
     }
 
     return transformed_vec;
 }
 
-double* __dwht_1d(double* vec, double* H, uint32_t N) {
+float* __dwht_1d(float* vec, float* H, uint32_t N) {
     if (H == NULL) {
         return NULL;
     }
 
-    double* transformed_vec = (double*)malloc(N * sizeof(double));
+    float* transformed_vec = (float*)malloc(N * sizeof(float));
     if (transformed_vec == NULL) {
         perror("Failed to allocate memory for transformed vector");
         free(H);
@@ -133,52 +133,52 @@ double* __dwht_1d(double* vec, double* H, uint32_t N) {
 }
 
 // Function for 1D DWHT
-double* dwht_1d(double* vec, uint32_t N) {
-    double* H = hadamard(N);
+float* dwht_1d(float* vec, uint32_t N) {
+    float* H = hadamard(N);
     if (H == NULL) {
         return NULL;
     }
 
-    double* transformed_vec = __dwht_1d(vec, H, N);
+    float* transformed_vec = __dwht_1d(vec, H, N);
 
     return transformed_vec;
 }
 
-double* dwht_1d_inverse(double* vec, uint32_t N) {
-    double* H = hadamard(N);
-    double* Ht = transpose(H, N, N);
+float* dwht_1d_inverse(float* vec, uint32_t N) {
+    float* H = hadamard(N);
+    float* Ht = transpose(H, N, N);
     free(H);
 
     if (H == NULL) {
         return NULL;
     }
 
-    double* transformed_vec = __dwht_1d(vec, Ht, N);
+    float* transformed_vec = __dwht_1d(vec, Ht, N);
 
     return transformed_vec;
 }
 
 // High level 2D DWHT function
 // Hm*X*Hn'
-double *dwht_2d_octave(double *matrix, uint32_t N, uint32_t M) {
+float *dwht_2d_octave(float *matrix, uint32_t N, uint32_t M) {
     if (N <= 0 || M <= 0 || (N & (N - 1)) != 0 || (M & (M - 1)) != 0) {
         printf("Error: N and M must be powers of 2 and greater than 0.\n");
         return NULL;
     }
 
-    double* Hm = hadamard(M);
-    double* Hn = hadamard(N);
+    float* Hm = hadamard(M);
+    float* Hn = hadamard(N);
 
     if (Hm == NULL || Hn == NULL) {
         if (Hm != NULL) free(Hm);
         if (Hn != NULL) free(Hn);
         return NULL;
     }
-    double *HnT = transpose(Hn, N, N);
+    float *HnT = transpose(Hn, N, N);
 
-    double* transformed_matrix = multiply_matrices(matrix, HnT, M, N, N);
+    float* transformed_matrix = multiply_matrices(matrix, HnT, M, N, N);
     transformed_matrix = multiply_matrices(Hm, transformed_matrix, M, M, N);
-    //double* transformed_matrix = multiply_matrices(Hm, matrix, N, N, M);
+    //float* transformed_matrix = multiply_matrices(Hm, matrix, N, N, M);
     //transformed_matrix = multiply_matrices(transformed_matrix, HnT, N, M, N);
 
     free(Hm);
@@ -188,26 +188,26 @@ double *dwht_2d_octave(double *matrix, uint32_t N, uint32_t M) {
     return transformed_matrix;
 }
 
-double* dwht_2d_inverse_octave(double* matrix, uint32_t N, uint32_t M) {
+float* dwht_2d_inverse_octave(float* matrix, uint32_t N, uint32_t M) {
     if (N <= 0 || M <= 0 || (N & (N - 1)) != 0 || (M & (M - 1)) != 0) {
         printf("Error: N and M must be powers of 2 and greater than 0.\n");
         return NULL;
     }
 
-    double* Hm = hadamard(M);
+    float* Hm = hadamard(M);
 
     if (Hm == NULL) {
         return NULL;
     }
 
-    double* HmT = transpose(Hm, M, M);
+    float* HmT = transpose(Hm, M, M);
     
     if (HmT == NULL) {
         free(Hm);
         return NULL;
     }
 
-    double *result_matrix = multiply_matrices(HmT, matrix, M, M, N);
+    float *result_matrix = multiply_matrices(HmT, matrix, M, M, N);
 
     return result_matrix;
 }
@@ -215,19 +215,19 @@ double* dwht_2d_inverse_octave(double* matrix, uint32_t N, uint32_t M) {
 // Function for 2D DWHT Low level implementation for
 // Hm*X*Hn'
 // where Hm and Hn are Hadamard matrices of size N and M respectively
-double* dwht_2d_octave_ll(double* matrix, uint32_t N, uint32_t M) {
+float* dwht_2d_octave_ll(float* matrix, uint32_t N, uint32_t M) {
 
-    double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
+    float* transformed_matrix = (float*)malloc(N * M * sizeof(float));
      if (transformed_matrix == NULL) {
         perror("Failed to allocate memory for transformed matrix");        
         return NULL;
     }
 
     // Perform Hm * X * Hn'
-    double temp_matrix[N*M];
+    float temp_matrix[N*M];
 
     // Apply DWHT to each row
-    double row[M];
+    float row[M];
     for (uint32_t i = 0; i < N; i++) {
 
         for (uint32_t j = 0; j < M; j++) {
@@ -235,8 +235,8 @@ double* dwht_2d_octave_ll(double* matrix, uint32_t N, uint32_t M) {
         }
 
         // Apply 1D DWHT to the row
-        //double* transformed_row = dwht_1d(row, M);
-        double* transformed_row = fwht_1d(row, M);
+        //float* transformed_row = dwht_1d(row, M);
+        float* transformed_row = fwht_1d(row, M);
 
         if (transformed_row == NULL) {
             free(transformed_row);
@@ -250,7 +250,7 @@ double* dwht_2d_octave_ll(double* matrix, uint32_t N, uint32_t M) {
     }
 
     // Apply DWHT to each column of the temporary matrix
-    double col[N];
+    float col[N];
     for (uint32_t j = 0; j < M; j++) {
 
         for (uint32_t i = 0; i < N; i++) {
@@ -258,8 +258,8 @@ double* dwht_2d_octave_ll(double* matrix, uint32_t N, uint32_t M) {
         }
         
         //Apply 1D DWHT to the column
-        //double* transformed_col = dwht_1d(col, N);
-        double* transformed_col = fwht_1d(col, N);
+        //float* transformed_col = dwht_1d(col, N);
+        float* transformed_col = fwht_1d(col, N);
 
         if (transformed_col == NULL) {
             free(transformed_col);
@@ -276,23 +276,23 @@ double* dwht_2d_octave_ll(double* matrix, uint32_t N, uint32_t M) {
 }
 
 // Function for inverse 2D DWHT (Octave version)
-double* dwht_2d_inverse_octave_ll(double* matrix, uint32_t N, uint32_t M) {
+float* dwht_2d_inverse_octave_ll(float* matrix, uint32_t N, uint32_t M) {
 
-    double* transformed_matrix = (double*)malloc(N * M * sizeof(double));
+    float* transformed_matrix = (float*)malloc(N * M * sizeof(float));
      if (transformed_matrix == NULL) {
         perror("Failed to allocate memory for transformed matrix");        
         return NULL;
     }
 
-    double column_vector[M];
+    float column_vector[M];
     for(uint32_t i = 0; i < N; i++) {
 
         for(uint32_t j = 0; j < M; j++) {
             column_vector[j] = matrix[j*N + i];
         }
 
-        //double* transformed_column_vector = dwht_1d_inverse(column_vector, M);
-        double* transformed_column_vector = fwht_1d(column_vector, M);
+        //float* transformed_column_vector = dwht_1d_inverse(column_vector, M);
+        float* transformed_column_vector = fwht_1d(column_vector, M);
         
         if (transformed_column_vector == NULL) {
             free(transformed_column_vector);
@@ -307,8 +307,8 @@ double* dwht_2d_inverse_octave_ll(double* matrix, uint32_t N, uint32_t M) {
 
     return transformed_matrix;
 }
-double* multiply_matrices(double* matrixA, double* matrixB, uint32_t N, uint32_t M, uint32_t K) {
-    double* result = (double*)malloc(N * M * sizeof(double));
+float* multiply_matrices(float* matrixA, float* matrixB, uint32_t N, uint32_t M, uint32_t K) {
+    float* result = (float*)malloc(N * M * sizeof(float));
     if (result == NULL) {
         perror("Failed to allocate memory for result matrix");
         return NULL;
