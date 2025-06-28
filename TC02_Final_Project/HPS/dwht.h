@@ -7,7 +7,28 @@
 #include <string.h>
 #include <stdint.h>
 
+#define Q_FRAC_BITS 16
+#define Q_SCALE ((int64_t)(1LL << Q_FRAC_BITS)) // 1LL = 1 in long long, Q_SCALE = 2^16
+
 #endif
+
+/**
+    @brief Converts a float value to fixed-point representation.
+    @param val The float value to convert.
+    @return The fixed-point representation of the input float value.
+*/
+int64_t float_to_fp(float val);
+
+/**
+ * @brief Converts a fixed-point value to float.
+ * 
+ * This function converts a fixed-point representation to a floating-point value.
+ * The fixed-point representation is assumed to be scaled by Q_FORMAT_SCALE.
+ *
+ * @param val The fixed-point value to convert.
+ * @return The floating-point representation of the input fixed-point value.
+ */
+float fp_to_float(int64_t val);
 
 /**
  * @brief Calculates the difference between two matrices.
@@ -50,6 +71,9 @@ float* dwht_1d(float* vec, uint32_t N);
  *       Ensure that the input data is properly allocated and initialized before calling this function.
  */
 float* fwht_1d(float* vec, uint32_t N);
+
+float* fwht_1d_float(float* vec, uint32_t N);
+
 float* dwht_1d_inverse(float* vec, uint32_t N);
 
 /**
@@ -134,3 +158,5 @@ float* multiply_matrices(float* matrixA, float* matrixB, uint32_t N, uint32_t M,
  * @return A pointer to the transposed matrix (M x N). Returns NULL if memory allocation fails.
  */
 float* transpose(float *matrix, uint32_t N, uint32_t M);
+
+float* __dwht_1d(float* vec, float* H, uint32_t N);

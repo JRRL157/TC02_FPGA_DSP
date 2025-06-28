@@ -1,5 +1,13 @@
 #include "dwht.h"
 
+int64_t float_to_fp(float val) {
+    return (int64_t)(val * Q_SCALE + (val >= 0 ? 0.5f : -0.5f));
+}
+
+float fp_to_float(int64_t val) {
+    return ((float)val / (float)Q_SCALE);
+}
+
 // Function to generate Hadamard matrix
 float* hadamard(uint32_t n) {
     if (n <= 0 || (n & (n - 1)) != 0) {
@@ -58,7 +66,44 @@ float* diff(float *matrixA, float* matrixB, uint32_t N, uint32_t M) {
     return result;
 }
 
-void __fwht_1D(float* vec_ptr, uint32_t N) {
+/**
+ * @brief This will be implemented on a dedicated hardware (FPGA) in the future.
+ *
+ * USES FIXED POINT ARITHMETIC
+ *
+ * @param vec_ptr Pointer to the input array containing the data to be transformed.
+ *                The array is modified in-place to contain the transformed data.
+ * @param N The size of the input array. Must be a power of 2.
+ */
+void __fwht_1D(int64_t* vec_ptr, uint32_t N) {
+    if (N == 1) {
+        return; // Base case, nothing to do
+    }
+
+    if (N <= 0 || (N & (N - 1)) != 0) {
+        printf("Error: N must be a power of 2 and greater than zero.\n");
+        return;
+    }
+
+    int64_t aux[N];
+
+    for (uint32_t i = 0; i < N; i++) {
+        aux[i] = vec_ptr[i];
+    }
+
+    // Current stage
+    uint32_t N_half = N / 2;
+    for(uint32_t i = 0; i < N_half; i++) {
+        vec_ptr[i] = aux[i] + aux[i + N_half];
+        vec_ptr[i + N_half] = aux[i] - aux[i + N_half];
+    }
+
+    // Next (log2(N) - 1) stages
+    __fwht_1D(vec_ptr, N_half);
+    __fwht_1D(vec_ptr + N_half, N_half);
+}
+
+void __fwht_1D_float(float* vec_ptr, uint32_t N) {
     if (N == 1) {
         return; // Base case, nothing to do
     }
@@ -82,8 +127,8 @@ void __fwht_1D(float* vec_ptr, uint32_t N) {
     }
 
     // Next (log2(N) - 1) stages
-    __fwht_1D(vec_ptr, N_half);
-    __fwht_1D(vec_ptr + N_half, N_half);
+    __fwht_1D_float(vec_ptr, N_half);
+    __fwht_1D_float(vec_ptr + N_half, N_half);
 }
 
 float* fwht_1d(float* vec, uint32_t N) {
@@ -91,22 +136,67 @@ float* fwht_1d(float* vec, uint32_t N) {
         printf("Error: N must be a power of 2 and greater than zero.\n");
         return NULL;
     }
+    float norm_factor = 1.0f / sqrtf((float)N);
+    int64_t fp_norm_factor = float_to_fp(norm_factor);
 
-    float* transformed_vec = (float*)malloc(N * sizeof(float));
-    if (transformed_vec == NULL) {
-        perror("Failed to allocate memory for transformed vector");
-        return NULL;
+    int64_t fp_vec[N];
+    for(uint32_t i = 0; i < N; i++) {
+        fp_vec[i] = float_to_fp(vec[i]);
     }
-    memcpy(transformed_vec, vec, N * sizeof(float));
 
-    __fwht_1D(transformed_vec, N);
+    __fwht_1D(fp_vec, N);
 
     // Applying Normalization
     for (uint32_t i = 0; i < N; i++) {
-        transformed_vec[i] /= sqrt((float)N);
+        printf("Before normalization: %lld\n", fp_vec[i]);
+        fp_vec[i] = (fp_vec[i] * fp_norm_factor) >> Q_FRAC_BITS;
+        printf("After normalization: %ld\n", fp_vec[i]);
     }
 
-    return transformed_vec;
+    float* result_vec = (float*)malloc(N * sizeof(float));
+    if (result_vec == NULL) {
+        perror("Failed to allocate memory for transformed vector");
+        return NULL;
+    }
+
+    // Convert fixed-point to float
+    for (uint32_t i = 0; i < N; i++) {
+        result_vec[i] = fp_to_float(fp_vec[i]);
+    }
+
+    return result_vec;
+}
+float* fwht_1d_float(float* vec, uint32_t N) {
+    if (N <= 0 || (N & (N-1)) != 0) {
+        printf("Error: N must be a power of 2 and greater than zero.\n");
+        return NULL;
+    }
+    float norm_factor = sqrtf((float)N);    
+
+    float float_vec[N];
+    for(uint32_t i = 0; i < N; i++) {
+        float_vec[i] = vec[i];
+    }
+
+    __fwht_1D_float(float_vec, N);
+
+    // Applying Normalization
+    for (uint32_t i = 0; i < N; i++) {
+        float_vec[i] = (float_vec[i] / norm_factor);
+    }
+
+    float* result_vec = (float*)malloc(N * sizeof(float));
+    if (result_vec == NULL) {
+        perror("Failed to allocate memory for transformed vector");
+        return NULL;
+    }
+
+    // Convert fixed-point to float
+    for (uint32_t i = 0; i < N; i++) {
+        result_vec[i] = float_vec[i];
+    }
+
+    return result_vec;
 }
 
 float* __dwht_1d(float* vec, float* H, uint32_t N) {
@@ -291,7 +381,6 @@ float* dwht_2d_inverse_octave_ll(float* matrix, uint32_t N, uint32_t M) {
             column_vector[j] = matrix[j*N + i];
         }
 
-        //float* transformed_column_vector = dwht_1d_inverse(column_vector, M);
         float* transformed_column_vector = fwht_1d(column_vector, M);
         
         if (transformed_column_vector == NULL) {
