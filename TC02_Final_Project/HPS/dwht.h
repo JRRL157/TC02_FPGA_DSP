@@ -7,8 +7,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#define Q_FRAC_BITS 16
-#define Q_SCALE ((int64_t)(1LL << Q_FRAC_BITS)) // 1LL = 1 in long long, Q_SCALE = 2^16
+#define Q_FRAC_BITS 8
+#define Q_SCALE ((int32_t)(1LL << Q_FRAC_BITS)) // 1LL = 1 in long long, Q_SCALE = 2^16
 
 #endif
 
@@ -17,7 +17,7 @@
     @param val The float value to convert.
     @return The fixed-point representation of the input float value.
 */
-int64_t float_to_fp(float val);
+int32_t float_to_fp(float val);
 
 /**
  * @brief Converts a fixed-point value to float.
@@ -28,7 +28,7 @@ int64_t float_to_fp(float val);
  * @param val The fixed-point value to convert.
  * @return The floating-point representation of the input fixed-point value.
  */
-float fp_to_float(int64_t val);
+float fp_to_float(int32_t val);
 
 /**
  * @brief Calculates the difference between two matrices.
@@ -160,3 +160,13 @@ float* multiply_matrices(float* matrixA, float* matrixB, uint32_t N, uint32_t M,
 float* transpose(float *matrix, uint32_t N, uint32_t M);
 
 float* __dwht_1d(float* vec, float* H, uint32_t N);
+
+/**
+ * @brief Calculates the Fast Walsh-Hadamard Transform (FWHT) of the given fixed-point vector.
+ *
+ * @param vec_ptr A pointer to the fixed point vector containing N elements
+ * @param N the number of elements in the vector. Must be a power of 2.
+ * 
+ * @return void
+ */
+void __fwht_1D(int32_t* vec_ptr, uint32_t N);

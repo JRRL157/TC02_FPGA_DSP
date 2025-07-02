@@ -1,10 +1,10 @@
 #include "dwht.h"
 
-int64_t float_to_fp(float val) {
-    return (int64_t)(val * Q_SCALE + (val >= 0 ? 0.5f : -0.5f));
+int32_t float_to_fp(float val) {
+    return (int32_t)(val * Q_SCALE + (val >= 0 ? 0.5f : -0.5f));
 }
 
-float fp_to_float(int64_t val) {
+float fp_to_float(int32_t val) {
     return ((float)val / (float)Q_SCALE);
 }
 
@@ -75,7 +75,7 @@ float* diff(float *matrixA, float* matrixB, uint32_t N, uint32_t M) {
  *                The array is modified in-place to contain the transformed data.
  * @param N The size of the input array. Must be a power of 2.
  */
-void __fwht_1D(int64_t* vec_ptr, uint32_t N) {
+void __fwht_1D(int32_t* vec_ptr, uint32_t N) {
     if (N == 1) {
         return; // Base case, nothing to do
     }
@@ -85,7 +85,7 @@ void __fwht_1D(int64_t* vec_ptr, uint32_t N) {
         return;
     }
 
-    int64_t aux[N];
+    int32_t aux[N];
 
     for (uint32_t i = 0; i < N; i++) {
         aux[i] = vec_ptr[i];
@@ -137,9 +137,9 @@ float* fwht_1d(float* vec, uint32_t N) {
         return NULL;
     }
     float norm_factor = 1.0f / sqrtf((float)N);
-    int64_t fp_norm_factor = float_to_fp(norm_factor);
+    int32_t fp_norm_factor = float_to_fp(norm_factor);
 
-    int64_t fp_vec[N];
+    int32_t fp_vec[N];
     for(uint32_t i = 0; i < N; i++) {
         fp_vec[i] = float_to_fp(vec[i]);
     }
