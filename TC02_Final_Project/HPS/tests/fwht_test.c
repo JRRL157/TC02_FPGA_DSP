@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "dwht.h"
+#include "../dwht.h"
 
 int compare_int_arrays(const int *a, const int *b, int n) {
     for (int i = 0; i < n; ++i) {
@@ -18,7 +18,7 @@ int compare_float_arrays(const float *a, const float *b, int n, float tol) {
 }
 
 // Test function for __dwht_1d and __dwht_1d_float
-void test_dwht_1d(const int *input, uint32_t n) {
+uint64_t test_dwht_1d(const int *input, uint32_t n) {
     float input_float[n];
 
     for (int i = 0; i < n; ++i) {
@@ -53,9 +53,12 @@ void test_dwht_1d(const int *input, uint32_t n) {
 
     free(float_output_fp);
     free(float_output_float);
+    return (uint64_t)pass;
 }
 
 int main() {
+    // Existing small tests...
+
     // Test 1: All zeros
     int test1[] = {0, 0, 0, 0};
     test_dwht_1d(test1, 4);
@@ -91,6 +94,25 @@ int main() {
     // Test 9: Random values
     int test9[] = {7, 4, -5, 10};
     test_dwht_1d(test9, 4);
+
+    // Test 10: Large array (10,000 entries)
+    uint64_t pass_count = 0;
+    uint64_t n_large = pow(2, 12); // 1,048,576 entries
+    uint32_t num_tests = 1000;
+    
+    uint64_t test_large[n_large];
+    
+    for(uint32_t k = 0; k < num_tests; ++k) {
+        // Fill with pseudo-random values (for reproducibility)
+        srand(42);
+        for (int i = 0; i < n_large; ++i) {
+            test_large[i] = rand() % 2001 - 1000; // Range: -1000 to 1000
+        }
+        printf("Running large test (2^20 entries)...\n");
+        pass_count+= test_dwht_1d(test_large, n_large);
+    }
+
+    printf("Large test pass result: (%d / %d) PASS RATE \n", pass_count, num_tests);
 
     return 0;
 }

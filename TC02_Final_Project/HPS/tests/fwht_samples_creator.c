@@ -1,4 +1,4 @@
-#include "dwht.h"
+#include "../dwht.h"
 
 void fp_samples_creator(int32_t *vec, int32_t *vec_copy, uint32_t N) {
     if (N <= 0 || (N & (N - 1)) != 0) {
@@ -59,7 +59,17 @@ void testbench(uint32_t N, uint32_t iter_number, char* input_file_name, char* ou
     fclose(output_file);
     printf("Testbench completed successfully. Input and output files created.\n");
 }
-int main() {
-    testbench(4, 100, "samples/input_samples.txt", "samples/output_samples.txt");
+int main(int argc, char *argv[]) {
+    if (argc != 5) {
+        printf("Usage: %s <N> <iter_number> <input_file_name> <output_file_name>\n", argv[0]);
+        return 1;
+    }
+
+    uint32_t N = (uint32_t)atoi(argv[1]);
+    uint32_t iter_number = (uint32_t)atoi(argv[2]);
+    char *input_file_name = argv[3];
+    char *output_file_name = argv[4];
+
+    testbench(N, iter_number, input_file_name, output_file_name);
     return 0;
 }

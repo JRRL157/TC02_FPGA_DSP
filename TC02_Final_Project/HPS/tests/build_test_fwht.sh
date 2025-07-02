@@ -1,6 +1,6 @@
 #!/bin/bash
 MAINFILE="fwht_test.c"
-LIBSRC="dwht.c"
+LIBSRC="../dwht.c"
 
 echo "Compiling main source: $MAINFILE"
 gcc $MAINFILE $LIBSRC -o fwht_test.out -std=c99 -lm -Wall
