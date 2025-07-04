@@ -1,0 +1,9 @@
+`ifndef CDPRAM_SV
+`define CDPRAM_SV
+
+`define CDPRAM_SEL_CONTROL  4'b0001
+`define CDPRAM_SEL_DATA_IN  4'b0010
+`define CDPRAM_SEL_DATA_OUT 4'b0100
+`define CDPRAM_SEL_STATUS   4'b1000
+
+`endif
