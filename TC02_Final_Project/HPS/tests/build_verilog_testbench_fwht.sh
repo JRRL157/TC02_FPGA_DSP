@@ -3,8 +3,8 @@ MAINFILE="fwht_samples_creator.c"
 LIBSRC="../dwht.c"
 
 #PARAMETERS
-N=4
-ITER=1000
+N=32
+ITER=100000
 INFILE=../samples/input_samples_$N.txt
 OUTFILE=../samples/output_samples_$N.txt
 
