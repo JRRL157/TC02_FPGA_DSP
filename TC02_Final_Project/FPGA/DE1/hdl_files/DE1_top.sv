@@ -193,5 +193,10 @@ module DE1_top(
         .y6(y6),
         .y7(y7)
     );
+	 
+	 L16 fwht16();
+	 L32 fwht32();
+	 L64 fwht64();
+	 L128 fwht128();
 
 endmodule

@@ -84,7 +84,7 @@ module L32_tb();
                              expected_y24, expected_y25, expected_y26, expected_y27, expected_y28, expected_y29, expected_y30, expected_y31) == 32) begin
                     
                     test_count++;
-                    #2000; // Wait for the DUT to compute the result (adjust if latency is higher for L32)
+                    #100; // Wait for the DUT to compute the result (adjust if latency is higher for L32)
 
                     $display("\n--- Test Case %0d ---", test_count);
                     // Display results in groups for readability

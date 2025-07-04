@@ -81,7 +81,7 @@ module L16_tb();
                              expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15) == 16) begin
                     
                     test_count++;
-                    #1000; // Wait for the DUT to compute the result (adjust if needed)
+                    #100; // Wait for the DUT to compute the result (adjust if needed)
 
                     $display("\n--- Test Case %0d ---", test_count);
                     $display("Actual outputs:   y0-y7:   %h %h %h %h %h %h %h %h", y0, y1, y2, y3, y4, y5, y6, y7);
