@@ -29,7 +29,8 @@ module dp_ram_controller(
 				next_state <= ST_CALC_PROD;
 			end
 			ST_CALC_PROD: begin
-				next_state <= cnt == 4094 ? ST_WAIT_CALC : ST_CALC_PROD;
+				//next_state <= cnt == 4094 ? ST_WAIT_CALC : ST_CALC_PROD;
+				next_state <= ST_WAIT_CALC;
 			end
 			ST_WAIT_CALC: begin
 				next_state <= done == 1'b1 ? ST_WRITE_OUTPUT : ST_WAIT_CALC;

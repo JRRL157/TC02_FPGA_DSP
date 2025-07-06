@@ -119,7 +119,7 @@ int main()
 	   	else
 	   	{
 			printf("Esperando um tempo\n");
-			usleep(1000); //Esperando um tempo para ver se o python espera a mensagem;
+			usleep(100000); //Esperando um tempo para ver se o python espera a mensagem;
 
 			bzero(buf, N_BUF);
 			snprintf(buf, sizeof(buf), "%u", data_out);

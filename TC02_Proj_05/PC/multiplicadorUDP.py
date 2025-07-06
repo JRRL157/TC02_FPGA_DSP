@@ -53,5 +53,5 @@ for a in range(1,16):
         if int_rec != res:
             quadro_final['error'] += 1
             quadro_final['occurrence'].append((a, b, res, int_rec))
-
+        time.sleep(0.1)
 print(quadro_final)
