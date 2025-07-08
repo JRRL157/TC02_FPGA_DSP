@@ -164,39 +164,55 @@ module DE1_top(
       output             VGA_VS
 );
 
-      // Use logic/wire for module ports, not real/shortreal
-      logic [31:0] x0, x1, x2, x3;
-      logic [31:0] y0, y1, y2, y3;
+      // Use arrays for input and output signals to simplify the design
+      logic [31:0] x [127:0];
+      logic [31:0] y [127:0];
 
-      // Assign fixed-point representations of the real values
-      // Example: multiply by 1000 for 3 decimal places, or use your own fixed-point scheme
-      assign x0 = 32'd1432; // represents 1.432
-      assign x1 = 32'd2567; // represents 2.567
+      // Example assignments for the first few inputs
+      assign x[0] = 32'd1432;
+      assign x[1] = 32'd2567;
+      assign x[2] = 32'd1234;
+      assign x[3] = 32'd5678;
+      assign x[4] = 32'd9101;
+      assign x[5] = 32'd1121;
+      assign x[6] = 32'd3141;
+      assign x[7] = 32'd5161;
 
-    L8 fwht_L8 (
-        .clk(clk),
-        .rst(rst),
-        .x0(x0),
-        .x1(x1),
-        .x2(x2),
-        .x3(x3),
-        .x4(x4),
-        .x5(x5),
-        .x6(x6),
-        .x7(x7),
-        .y0(y0),
-        .y1(y1),
-        .y2(y2),
-        .y3(y3),
-        .y4(y4),
-        .y5(y5),
-        .y6(y6),
-        .y7(y7)
-    );
-	 
-	 L16 fwht16();
-	 L32 fwht32();
-	 L64 fwht64();
-	 L128 fwht128();
+      L2 fwht_L2(
+            .x(x[1:0]),
+            .y(y[1:0])
+      );
+      L4 fwht_L4 (
+            .clk(clk),
+            .rst(rst),
+            .x(x[3:0]),
+            .y(y[3:0])
+      );
+      L8 fwht_L8 (
+            .clk(clk),
+            .rst(rst),
+            .x(x[7:0]),
+            .y(y[7:0])
+      );
+      L16 fwht16(
+            .clk(clk), .rst(rst),
+            .x(x[15:0]),
+            .y(y[15:0])
+      );
+      L32 fwht32(
+            .clk(clk), .rst(rst),
+            .x(x[31:0]),
+            .y(y[31:0])
+      );
+      L64 fwht64(
+            .clk(clk), .rst(rst),
+            .x(x[63:0]),
+            .y(y[63:0])
+      );
+      L128 fwht128(
+            .clk(clk), .rst(rst),
+            .x(x[127:0]),
+            .y(y[127:0])
+      );
 
 endmodule

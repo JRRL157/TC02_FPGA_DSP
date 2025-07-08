@@ -1,45 +1,36 @@
 module L4(
     input clk,
     input rst,
-    input logic [31:0] x0,
-    input logic [31:0] x1,
-    input logic [31:0] x2,
-    input logic [31:0] x3,
-    output logic [31:0] y0,
-    output logic [31:0] y1,
-    output logic [31:0] y2,
-    output logic [31:0] y3
+    input logic [31:0] x [3:0],
+    output logic [31:0] y [3:0]
 );
-
-    reg [31:0] a0_reg, a1_reg, a2_reg, a3_reg;
+    reg [31:0] a_upper [1:0];
+    reg [31:0] a_lower [1:0];
+    integer i;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            a0_reg <= 32'h0;
-            a2_reg <= 32'h0;
-            a1_reg <= 32'h0;
-            a3_reg <= 32'h0;
+            for (i = 0; i < 2; i++) begin
+                a_upper[i] <= 32'h0;
+                a_lower[i] <= 32'h0;
+            end
         end
         else begin
-            a0_reg <= x0 + x2;
-            a2_reg <= x0 - x2;
-            a1_reg <= x1 + x3;
-            a3_reg <= x1 - x3;
+            for(i = 0; i < 2; i++) begin
+                a_upper[i] <= x[i] + x[i + 2];
+                a_lower[i] <= x[i] - x[i + 2];
+            end
         end
     end
-
-    L2 l2_0 (
-        .x0(a0_reg),
-        .x1(a1_reg),
-        .y0(y0),
-        .y1(y1)
+    
+    L2 l2_upper(
+        .x(a_upper),
+        .y(y[1:0])
     );
 
-    L2 l2_1 (
-        .x0(a2_reg),
-        .x1(a3_reg),
-        .y0(y2),
-        .y1(y3)
+    L2 l2_lower(
+        .x(a_lower),
+        .y(y[3:2])
     );
 
 endmodule
