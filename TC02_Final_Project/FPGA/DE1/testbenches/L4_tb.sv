@@ -3,18 +3,9 @@
 module L4_tb();
 
     // Testbench signals
-    logic [31:0] x0;
-    logic [31:0] x1;
-    logic [31:0] x2;
-    logic [31:0] x3;
-    logic [31:0] y0;
-    logic [31:0] y1;
-    logic [31:0] y2;
-    logic [31:0] y3;
-    logic [31:0] expected_y0;
-    logic [31:0] expected_y1;
-    logic [31:0] expected_y2;
-    logic [31:0] expected_y3;
+    logic [31:0] x [3:0];
+    wire [31:0] y [3:0]; // Using wire to avoid Icarus Verilog limitation with unpacked arrays
+    logic [31:0] expected_y [3:0];
 
     logic clk;
     parameter CLK_PERIOD = 10ns; // 10ns period means 100 MHz clock (1 / 10ns = 100 MHz)
@@ -34,14 +25,8 @@ module L4_tb();
     L4 fwht_L4 (
         .clk(clk),
         .rst(1'b0),
-        .x0(x0),
-        .x1(x1),
-        .x2(x2),
-        .x3(x3),
-        .y0(y0),
-        .y1(y1),
-        .y2(y2),
-        .y3(y3)
+        .x(x),
+        .y(y)
     );
     
     initial begin
@@ -63,14 +48,14 @@ module L4_tb();
 
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
 
-            if ($fscanf(input_file_fd, "%h %h %h %h\n", x0, x1, x2, x3) == 4) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h\n", expected_y0, expected_y1, expected_y2, expected_y3) == 4) begin
+            if ($fscanf(input_file_fd, "%h %h %h %h\n", x[0], x[1], x[2], x[3]) == 4) begin
+                if ($fscanf(output_file_fd, "%h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3]) == 4) begin
                     test_count++;
                     #100;
-                    $display("Actual output: y0 = %h, y1 = %h, y2 = %h, y3 = %h", y0, y1, y2, y3);
-                    $display("Expected output: y0 = %h, y1 = %h, y2 = %h, y3 = %h",expected_y0, expected_y1, expected_y2, expected_y3);
+                    $display("Actual output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h", y[0], y[1], y[2], y[3]);
+                    $display("Expected output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h",expected_y[0], expected_y[1], expected_y[2], expected_y[3]);
 
-                    if (y0 !== expected_y0 || y1 !== expected_y1 || y2 !== expected_y2 || y3 !== expected_y3) begin
+                    if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3]) begin
                         errors++;
                         $display("Error in test %0d!", test_count);
                     end 
