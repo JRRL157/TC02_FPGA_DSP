@@ -3,12 +3,9 @@
 module L2_tb();
 
     // Testbench signals
-    logic [31:0] x0;
-    logic [31:0] x1;
-    logic [31:0] y0;
-    logic [31:0] y1;
-    logic [31:0] expected_y0;
-    logic [31:0] expected_y1;
+    logic [31:0] x [0:1];
+    wire [31:0] y [1:0]; //THIS NEEDS TO BE A WIRE, NOT A LOGIC DUE TO AN ICARUS VERILOG LIMITATION WITH UNPACKED ARRAYS!
+    logic [31:0] expected_y [0:1];
 
     // File descriptors
     integer input_file_fd;
@@ -18,12 +15,10 @@ module L2_tb();
     int test_count = 0;
     int errors = 0;
 
-    // Instantiate the FWHT module
+    // Instantiate the L2 module
     L2 fwht_L2 (
-        .x0(x0),
-        .x1(x1),
-        .y0(y0),
-        .y1(y1)
+        .x(x),
+        .y(y)
     );
     
     initial begin
@@ -44,14 +39,15 @@ module L2_tb();
 
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
 
-            if ($fscanf(input_file_fd, "%h %h\n", x0, x1) == 2) begin
-                if ($fscanf(output_file_fd, "%h %h\n", expected_y0, expected_y1) == 2) begin
+            if ($fscanf(input_file_fd, "%h %h\n", x[0], x[1]) == 2) begin
+                if ($fscanf(output_file_fd, "%h %h\n", expected_y[0], expected_y[1]) == 2) begin
                     test_count++;
                     #100;
-                    $display("Actual output: y0 = %h, y1 = %h", y0, y1);
-                    $display("Expected output: y0 = %h, y1 = %h",expected_y0, expected_y1);
+                    $display("Input: x[0] = %h, x[1] = %h", x[0], x[1]);
+                    $display("Actual output: y[0] = %h, y[1] = %h", y[0], y[1]);
+                    $display("Expected output: y[0] = %h, y[1] = %h",expected_y[0], expected_y[1]);
 
-                    if (y0 !== expected_y0 || y1 !== expected_y1) begin
+                    if (y[0] !== expected_y[0] || y[1] !== expected_y[1]) begin
                         errors++;
                         $display("Error in test %0d!", test_count);
                     end 
