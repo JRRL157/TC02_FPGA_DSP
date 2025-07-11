@@ -1,11 +1,14 @@
 module L16(
     input clk,
     input rst,
-    input logic [31:0] x [15:0],
-    output logic [31:0] y [15:0]
+    input wire [31:0] x [15:0],
+    output wire [31:0] y [15:0]
 );
     reg [31:0] a_upper [8];
     reg [31:0] a_lower [8];
+    wire [31:0] y_upper [7:0];
+    wire [31:0] y_lower [7:0];
+
     integer i;
 
     always @(posedge clk or posedge rst) begin
@@ -22,17 +25,27 @@ module L16(
             end
         end
     end
-    
+
+    genvar gi;
+    generate
+        for (gi = 0; gi < 8; gi = gi + 1) begin: y_assign
+            assign y[gi] = y_upper[gi];
+            assign y[gi + 8] = y_lower[gi];
+        end
+    endgenerate
+
     L8 l8_upper(
-        .clk(clk), .rst(rst),
+        .clk(clk),
+         .rst(rst),
         .x(a_upper),
-        .y(y[7:0])
+        .y(y_upper)
     );
 
     L8 l8_lower(
-        .clk(clk), .rst(rst),
+        .clk(clk),
+         .rst(rst),
         .x(a_lower),
-        .y(y[15:8])
+        .y(y_lower)
     );
 
 endmodule

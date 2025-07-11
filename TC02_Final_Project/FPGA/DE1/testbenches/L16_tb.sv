@@ -3,19 +3,14 @@
 module L16_tb();
 
     // Testbench signals for N=16
-    logic [31:0] x0, x1, x2, x3, x4, x5, x6, x7;
-    logic [31:0] x8, x9, x10, x11, x12, x13, x14, x15;
-
-    logic [31:0] y0, y1, y2, y3, y4, y5, y6, y7;
-    logic [31:0] y8, y9, y10, y11, y12, y13, y14, y15;
-
-    logic [31:0] expected_y0, expected_y1, expected_y2, expected_y3;
-    logic [31:0] expected_y4, expected_y5, expected_y6, expected_y7;
-    logic [31:0] expected_y8, expected_y9, expected_y10, expected_y11;
-    logic [31:0] expected_y12, expected_y13, expected_y14, expected_y15;
+    logic [31:0] x [15:0];
+    wire [31:0] y [15:0];
+    logic [31:0] expected_y [15:0];
 
     logic clk;
     logic rst; // Reset signal
+    integer i;
+    reg has_error;
 
     parameter CLK_PERIOD = 10ns; // 10ns period -> 100 MHz clock
     parameter CLK_HALF_PERIOD = CLK_PERIOD / 2;
@@ -35,15 +30,8 @@ module L16_tb();
     L16 fwht_L16 (
         .clk(clk),
         .rst(rst),
-        .x0(x0),   .x1(x1),   .x2(x2),   .x3(x3),
-        .x4(x4),   .x5(x5),   .x6(x6),   .x7(x7),
-        .x8(x8),   .x9(x9),   .x10(x10), .x11(x11),
-        .x12(x12), .x13(x13), .x14(x14), .x15(x15),
-
-        .y0(y0),   .y1(y1),   .y2(y2),   .y3(y3),
-        .y4(y4),   .y5(y5),   .y6(y6),   .y7(y7),
-        .y8(y8),   .y9(y9),   .y10(y10), .y11(y11),
-        .y12(y12), .y13(y13), .y14(y14), .y15(y15)
+        .x(x),
+        .y(y)
     );
     
     initial begin
@@ -74,26 +62,26 @@ module L16_tb();
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
             // Read 16 inputs
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", 
-                         x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15) == 16) begin
+                         x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15]) == 16) begin
                 // Read 16 expected outputs
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
-                             expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7,
-                             expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15) == 16) begin
+                             expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7],
+                             expected_y[8], expected_y[9], expected_y[10], expected_y[11], expected_y[12], expected_y[13], expected_y[14], expected_y[15]) == 16) begin
                     
                     test_count++;
                     #100; // Wait for the DUT to compute the result (adjust if needed)
 
                     $display("\n--- Test Case %0d ---", test_count);
-                    $display("Actual outputs:   y0-y7:   %h %h %h %h %h %h %h %h", y0, y1, y2, y3, y4, y5, y6, y7);
-                    $display("                    y8-y15:  %h %h %h %h %h %h %h %h", y8, y9, y10, y11, y12, y13, y14, y15);
-                    $display("Expected outputs: y0-y7:   %h %h %h %h %h %h %h %h", expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7);
-                    $display("                    y8-y15:  %h %h %h %h %h %h %h %h", expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15);
+                    has_error = 0;
+                    for (i = 0; i < 16; i++) begin
+                        if (y[i] !== expected_y[i]) begin
+                            has_error = 1;
+                            $display("Mismatch at y[%0d]: Expected %h, got %h", i, expected_y[i], y[i]);
+                        end
+                    end
 
                     // Check for errors
-                    if (y0 !== expected_y0 || y1 !== expected_y1 || y2 !== expected_y2 || y3 !== expected_y3 ||
-                        y4 !== expected_y4 || y5 !== expected_y5 || y6 !== expected_y6 || y7 !== expected_y7 ||
-                        y8 !== expected_y8 || y9 !== expected_y9 || y10 !== expected_y10 || y11 !== expected_y11 ||
-                        y12 !== expected_y12 || y13 !== expected_y13 || y14 !== expected_y14 || y15 !== expected_y15) begin
+                    if (has_error) begin
                         errors++;
                         $display("-> Error in test %0d!", test_count);
                     end else begin
