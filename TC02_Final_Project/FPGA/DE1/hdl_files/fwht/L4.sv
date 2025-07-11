@@ -1,11 +1,14 @@
 module L4(
     input clk,
     input rst,
-    input logic [31:0] x [3:0],
-    output logic [31:0] y [3:0]
+    input wire [31:0] x [3:0],
+    output wire [31:0] y [3:0]
 );
     reg [31:0] a_upper [1:0];
     reg [31:0] a_lower [1:0];
+    wire [31:0] y_upper [1:0];
+    wire [31:0] y_lower [1:0];
+
     integer i;
 
     always @(posedge clk or posedge rst) begin
@@ -22,15 +25,20 @@ module L4(
             end
         end
     end
-    
+
+    assign y[0] = y_upper[0];
+    assign y[1] = y_upper[1];
+    assign y[2] = y_lower[0];
+    assign y[3] = y_lower[1];
+
     L2 l2_upper(
         .x(a_upper),
-        .y(y[1:0])
+        .y(y_upper)
     );
 
     L2 l2_lower(
         .x(a_lower),
-        .y(y[3:2])
+        .y(y_lower)
     );
 
 endmodule
