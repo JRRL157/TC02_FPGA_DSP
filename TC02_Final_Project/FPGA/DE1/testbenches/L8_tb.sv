@@ -3,32 +3,9 @@
 module L8_tb();
 
     // Testbench signals
-    logic [31:0] x0;
-    logic [31:0] x1;
-    logic [31:0] x2;
-    logic [31:0] x3;
-    logic [31:0] x4;
-    logic [31:0] x5;
-    logic [31:0] x6;
-    logic [31:0] x7;
-
-    logic [31:0] y0;
-    logic [31:0] y1;
-    logic [31:0] y2;
-    logic [31:0] y3;
-    logic [31:0] y4;
-    logic [31:0] y5;
-    logic [31:0] y6;
-    logic [31:0] y7;
-
-    logic [31:0] expected_y0;
-    logic [31:0] expected_y1;
-    logic [31:0] expected_y2;
-    logic [31:0] expected_y3;
-    logic [31:0] expected_y4;
-    logic [31:0] expected_y5;
-    logic [31:0] expected_y6;
-    logic [31:0] expected_y7;
+    logic [31:0] x [7:0];
+    wire [31:0] y [7:0];
+    logic [31:0] expected_y [7:0];
 
     logic clk;
 
@@ -49,24 +26,10 @@ module L8_tb();
     L8 fwht_L8 (
         .clk(clk),
         .rst(1'b0),
-        .x0(x0),
-        .x1(x1),
-        .x2(x2),
-        .x3(x3),
-        .x4(x4),
-        .x5(x5),
-        .x6(x6),
-        .x7(x7),
-        .y0(y0),
-        .y1(y1),
-        .y2(y2),
-        .y3(y3),
-        .y4(y4),
-        .y5(y5),
-        .y6(y6),
-        .y7(y7)
+        .x(x),
+        .y(y)
     );
-    
+
     initial begin
         clk = 0;
 
@@ -87,14 +50,14 @@ module L8_tb();
 
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
 
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x0, x1, x2, x3, x4, x5, x6, x7) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7) == 8) begin
+            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
+                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]) == 8) begin
                     test_count++;
                     #100;
-                    $display("Actual output: y0 = %h, y1 = %h, y2 = %h, y3 = %h, y4 = %h, y5 = %h, y6 = %h, y7 = %h", y0, y1, y2, y3, y4, y5, y6, y7);
-                    $display("Expected output: y0 = %h, y1 = %h, y2 = %h, y3 = %h, y4 = %h, y5 = %h, y6 = %h, y7 = %h", expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7);
+                    $display("Actual output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
+                    $display("Expected output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]);
 
-                    if (y0 !== expected_y0 || y1 !== expected_y1 || y2 !== expected_y2 || y3 !== expected_y3 || y4 !== expected_y4 || y5 !== expected_y5 || y6 !== expected_y6 || y7 !== expected_y7) begin
+                    if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3] || y[4] !== expected_y[4] || y[5] !== expected_y[5] || y[6] !== expected_y[6] || y[7] !== expected_y[7]) begin
                         errors++;
                         $display("Error in test %0d!", test_count);
                     end 
@@ -118,4 +81,5 @@ module L8_tb();
 
     $finish;
     end
+
 endmodule
