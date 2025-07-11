@@ -3,19 +3,14 @@
 module L32_tb();
 
     // Testbench signals for N=32
-    logic [31:0] x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15;
-    logic [31:0] x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31;
-
-    logic [31:0] y0, y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15;
-    logic [31:0] y16, y17, y18, y19, y20, y21, y22, y23, y24, y25, y26, y27, y28, y29, y30, y31;
-
-    logic [31:0] expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7;
-    logic [31:0] expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15;
-    logic [31:0] expected_y16, expected_y17, expected_y18, expected_y19, expected_y20, expected_y21, expected_y22, expected_y23;
-    logic [31:0] expected_y24, expected_y25, expected_y26, expected_y27, expected_y28, expected_y29, expected_y30, expected_y31;
+    logic [31:0] x [31:0];
+    wire [31:0] y [31:0];
+    logic [31:0] expected_y [31:0];
 
     logic clk;
     logic rst; // Reset signal
+    integer i;
+    reg has_error;
 
     parameter CLK_PERIOD = 10ns; // 10ns period -> 100 MHz clock
     parameter CLK_HALF_PERIOD = CLK_PERIOD / 2;
@@ -35,15 +30,8 @@ module L32_tb();
     L32 fwht_L32 (
         .clk(clk),
         .rst(rst),
-        .x0(x0),   .x1(x1),   .x2(x2),   .x3(x3),   .x4(x4),   .x5(x5),   .x6(x6),   .x7(x7),
-        .x8(x8),   .x9(x9),   .x10(x10), .x11(x11), .x12(x12), .x13(x13), .x14(x14), .x15(x15),
-        .x16(x16), .x17(x17), .x18(x18), .x19(x19), .x20(x20), .x21(x21), .x22(x22), .x23(x23),
-        .x24(x24), .x25(x25), .x26(x26), .x27(x27), .x28(x28), .x29(x29), .x30(x30), .x31(x31),
-
-        .y0(y0),   .y1(y1),   .y2(y2),   .y3(y3),   .y4(y4),   .y5(y5),   .y6(y6),   .y7(y7),
-        .y8(y8),   .y9(y9),   .y10(y10), .y11(y11), .y12(y12), .y13(y13), .y14(y14), .y15(y15),
-        .y16(y16), .y17(y17), .y18(y18), .y19(y19), .y20(y20), .y21(y21), .y22(y22), .y23(y23),
-        .y24(y24), .y25(y25), .y26(y26), .y27(y27), .y28(y28), .y29(y29), .y30(y30), .y31(y31)
+        .x(x),
+        .y(y)
     );
     
     initial begin
@@ -74,38 +62,29 @@ module L32_tb();
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
             // Read 32 inputs
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", 
-                         x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15,
-                         x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31) == 32) begin
+                         x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15],
+                         x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31]) == 32) begin
                 // Read 32 expected outputs
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
-                             expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7,
-                             expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15,
-                             expected_y16, expected_y17, expected_y18, expected_y19, expected_y20, expected_y21, expected_y22, expected_y23,
-                             expected_y24, expected_y25, expected_y26, expected_y27, expected_y28, expected_y29, expected_y30, expected_y31) == 32) begin
+                             expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7],
+                             expected_y[8], expected_y[9], expected_y[10], expected_y[11], expected_y[12], expected_y[13], expected_y[14], expected_y[15],
+                             expected_y[16], expected_y[17], expected_y[18], expected_y[19], expected_y[20], expected_y[21], expected_y[22], expected_y[23],
+                             expected_y[24], expected_y[25], expected_y[26], expected_y[27], expected_y[28], expected_y[29], expected_y[30], expected_y[31]) == 32) begin
                     
                     test_count++;
                     #100; // Wait for the DUT to compute the result (adjust if latency is higher for L32)
 
                     $display("\n--- Test Case %0d ---", test_count);
-                    // Display results in groups for readability
-                    $display("Actual outputs:   y0-y7:   %h %h %h %h %h %h %h %h", y0, y1, y2, y3, y4, y5, y6, y7);
-                    $display("                    y8-y15:  %h %h %h %h %h %h %h %h", y8, y9, y10, y11, y12, y13, y14, y15);
-                    $display("                    y16-y23: %h %h %h %h %h %h %h %h", y16, y17, y18, y19, y20, y21, y22, y23);
-                    $display("                    y24-y31: %h %h %h %h %h %h %h %h", y24, y25, y26, y27, y28, y29, y30, y31);
-                    $display("Expected outputs: y0-y7:   %h %h %h %h %h %h %h %h", expected_y0, expected_y1, expected_y2, expected_y3, expected_y4, expected_y5, expected_y6, expected_y7);
-                    $display("                    y8-y15:  %h %h %h %h %h %h %h %h", expected_y8, expected_y9, expected_y10, expected_y11, expected_y12, expected_y13, expected_y14, expected_y15);
-                    $display("                    y16-y23: %h %h %h %h %h %h %h %h", expected_y16, expected_y17, expected_y18, expected_y19, expected_y20, expected_y21, expected_y22, expected_y23);
-                    $display("                    y24-y31: %h %h %h %h %h %h %h %h", expected_y24, expected_y25, expected_y26, expected_y27, expected_y28, expected_y29, expected_y30, expected_y31);
+                    has_error = 0;
+                    for (i = 0; i < 32; i++) begin
+                        if (y[i] !== expected_y[i]) begin
+                            has_error = 1;
+                            $display("Mismatch at y[%0d]: Expected %h, got %h", i, expected_y[i], y[i]);
+                        end
+                    end
 
                     // Check for errors
-                    if (y0 !== expected_y0 || y1 !== expected_y1 || y2 !== expected_y2 || y3 !== expected_y3 ||
-                        y4 !== expected_y4 || y5 !== expected_y5 || y6 !== expected_y6 || y7 !== expected_y7 ||
-                        y8 !== expected_y8 || y9 !== expected_y9 || y10 !== expected_y10 || y11 !== expected_y11 ||
-                        y12 !== expected_y12 || y13 !== expected_y13 || y14 !== expected_y14 || y15 !== expected_y15 ||
-                        y16 !== expected_y16 || y17 !== expected_y17 || y18 !== expected_y18 || y19 !== expected_y19 ||
-                        y20 !== expected_y20 || y21 !== expected_y21 || y22 !== expected_y22 || y23 !== expected_y23 ||
-                        y24 !== expected_y24 || y25 !== expected_y25 || y26 !== expected_y26 || y27 !== expected_y27 ||
-                        y28 !== expected_y28 || y29 !== expected_y29 || y30 !== expected_y30 || y31 !== expected_y31) begin
+                    if (has_error) begin
                         errors++;
                         $display("-> Error in test %0d!", test_count);
                     end else begin

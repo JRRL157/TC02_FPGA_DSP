@@ -4,8 +4,11 @@ module L32(
     input logic [31:0] x [31:0],
     output logic [31:0] y [31:0]
 );
-    reg [31:0] a_upper [16];
-    reg [31:0] a_lower [16];
+    reg [31:0] a_upper [15:0];
+    reg [31:0] a_lower [15:0];
+    wire [31:0] y_upper [15:0];
+    wire [31:0] y_lower [15:0];
+
     integer i;
 
     always @(posedge clk or posedge rst) begin
@@ -22,17 +25,27 @@ module L32(
             end
         end
     end
+
+    genvar gi;
+    generate
+        for (gi = 0; gi < 16; gi++) begin : y_assign
+            assign y[gi] = y_upper[gi];
+            assign y[gi + 16] = y_lower[gi];
+        end
+    endgenerate
     
     L16 l16_upper(
-        .clk(clk), .rst(rst),
+        .clk(clk),
+        .rst(rst),
         .x(a_upper),
-        .y(y[15:0])
+        .y(y_upper)
     );
 
     L16 l16_lower(
-        .clk(clk), .rst(rst),
+        .clk(clk),
+        .rst(rst),
         .x(a_lower),
-        .y(y[31:16])
+        .y(y_lower)
     );
 
 endmodule
