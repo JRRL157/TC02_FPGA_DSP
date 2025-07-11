@@ -1,11 +1,14 @@
 module L64(
     input clk,
     input rst,
-    input logic [31:0] x [63:0],
-    output logic [31:0] y [63:0]
+    input wire [31:0] x [63:0],
+    output wire [31:0] y [63:0]
 );
-    reg [31:0] a_upper[32];
-    reg [31:0] a_lower[32];
+    reg [31:0] a_upper [31:0];
+    reg [31:0] a_lower [31:0];
+    wire [31:0] y_upper [31:0];
+    wire [31:0] y_lower [31:0];
+
     integer i;
 
     always @(posedge clk or posedge rst) begin
@@ -23,16 +26,25 @@ module L64(
         end
     end
 
+    genvar gi;
+    generate
+        for (gi = 0; gi < 32; gi++) begin : y_assign
+            assign y[gi] = y_upper[gi];
+            assign y[gi + 32] = y_lower[gi];
+        end
+    endgenerate
+
     L32 l32_upper(
-        .clk(clk), .rst(rst),
+        .clk(clk), 
+        .rst(rst),
         .x(a_upper),
-        .y(y[31:0])
+        .y(y_upper)
     );
 
     L32 l32_lower(
         .clk(clk), .rst(rst),
         .x(a_lower),
-        .y(y[63:32])
+        .y(y_lower)
     );
 
 endmodule
