@@ -1,7 +1,6 @@
 `timescale 1ns/1ps
 
 module L2_tb();
-
     // Testbench signals
     logic [31:0] x [0:1];
     wire [31:0] y [1:0]; //THIS NEEDS TO BE A WIRE, NOT A LOGIC DUE TO AN ICARUS VERILOG LIMITATION WITH UNPACKED ARRAYS!
@@ -20,7 +19,7 @@ module L2_tb();
         .x(x),
         .y(y)
     );
-    
+
     initial begin
         input_file_fd = $fopen("../../../HPS/samples/input_samples_2.txt","r");
 

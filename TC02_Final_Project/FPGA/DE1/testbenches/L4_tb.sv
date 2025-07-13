@@ -28,7 +28,7 @@ module L4_tb();
         .x(x),
         .y(y)
     );
-    
+
     initial begin
         clk = 0;
         input_file_fd = $fopen("../../../HPS/samples/input_samples_4.txt","r");

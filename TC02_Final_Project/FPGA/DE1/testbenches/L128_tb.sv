@@ -1,13 +1,12 @@
 `timescale 1ns/1ps
 
 module L128_testbench();
-
     logic [31:0] x [127:0];
     wire [31:0] y [127:0];
     logic [31:0] expected_y [127:0];
 
     logic clk;
-    logic rst; 
+    logic rst;
     integer i;
     reg has_error;
 
@@ -22,19 +21,17 @@ module L128_testbench();
     int test_count = 0;
     int errors = 0;
 
-    // Instancia o módulo L128
     L128 fwht_L128 (
         .clk(clk),
         .rst(rst),
         .x(x),
         .y(y)
     );
-    
+
     initial begin
         clk = 0;
         rst = 1;
 
-        // Abre os arquivos de amostra
         input_file_fd = $fopen("../../../HPS/samples/input_samples_128.txt","r");
         if (input_file_fd == 0) begin
             $error("Erro: nao foi possivel abrir o arquivo input_samples_128.txt!");
@@ -48,14 +45,12 @@ module L128_testbench();
             $finish;
         end
 
-        // Aplica o reset por alguns ciclos
         #(2 * CLK_PERIOD);
-        rst = 0; // Desativa o reset
+        rst = 0;
         #(2 * CLK_PERIOD);
 
-        // --- Loop de Teste ---
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
-            // Lê 128 entradas e 128 saídas esperadas
+
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", 
                          x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15],
                          x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31],
@@ -84,7 +79,7 @@ module L128_testbench();
                              expected_y[120], expected_y[121], expected_y[122], expected_y[123], expected_y[124], expected_y[125], expected_y[126], expected_y[127]) == 128) begin
                     
                     test_count++;
-                    #200;
+                    #100;
 
                     $display("\n--- Test Case %0d ---", test_count);
 
