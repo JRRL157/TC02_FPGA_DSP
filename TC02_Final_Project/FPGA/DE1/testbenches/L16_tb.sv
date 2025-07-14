@@ -21,7 +21,7 @@ module L16_tb();
     int test_count = 0;
     int errors = 0;
 
-    L16 fwht_L16 (
+    LN #(.N(16)) fwht_L16 (
         .clk(clk),
         .rst(rst),
         .x(x),
