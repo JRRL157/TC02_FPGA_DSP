@@ -178,39 +178,49 @@ module DE1_top(
       assign x[6] = 32'd3141;
       assign x[7] = 32'd5161;
 
-      L2 fwht_L2(
+      L2 fwht2(
             .x(x[1:0]),
             .y(y[1:0])
       );
-      L4 fwht_L4 (
+
+      LN #(.N(4)) fwht4(
             .clk(clk),
             .rst(rst),
             .x(x[3:0]),
             .y(y[3:0])
       );
-      L8 fwht_L8 (
+
+      LN #(.N(8)) fwht8(
             .clk(clk),
             .rst(rst),
             .x(x[7:0]),
             .y(y[7:0])
       );
-      L16 fwht16(
-            .clk(clk), .rst(rst),
+
+      LN #(.N(16)) fwht16(
+            .clk(clk),
+            .rst(rst),
             .x(x[15:0]),
             .y(y[15:0])
       );
-      L32 fwht32(
-            .clk(clk), .rst(rst),
+
+      LN #(.N(32)) fwht32(
+            .clk(clk),
+            .rst(rst),
             .x(x[31:0]),
             .y(y[31:0])
       );
-      L64 fwht64(
-            .clk(clk), .rst(rst),
+
+      LN #(.N(64)) fwht64(
+            .clk(clk), 
+            .rst(rst),
             .x(x[63:0]),
             .y(y[63:0])
       );
-      L128 fwht128(
-            .clk(clk), .rst(rst),
+
+      LN #(.N(128)) fwht128(
+            .clk(clk),
+            .rst(rst),
             .x(x[127:0]),
             .y(y[127:0])
       );
