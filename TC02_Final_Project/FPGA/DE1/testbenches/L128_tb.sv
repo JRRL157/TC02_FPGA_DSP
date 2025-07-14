@@ -21,7 +21,7 @@ module L128_testbench();
     int test_count = 0;
     int errors = 0;
 
-    L128 fwht_L128 (
+    LN #(.N(128)) fwht_L128 (
         .clk(clk),
         .rst(rst),
         .x(x),
