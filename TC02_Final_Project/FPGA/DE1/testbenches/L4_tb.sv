@@ -22,7 +22,7 @@ module L4_tb();
     int errors = 0;
 
     // Instantiate the FWHT module
-    L4 fwht_L4 (
+    LN #(.N(4)) fwht_L4 (
         .clk(clk),
         .rst(1'b0),
         .x(x),

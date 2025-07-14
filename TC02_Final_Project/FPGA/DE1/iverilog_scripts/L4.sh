@@ -4,7 +4,7 @@ TESTBENCH_DIR="../testbenches"
 DESIGN_DIR="../hdl_files/fwht"
 
 TESTBENCH_SRC="L4_tb.sv"
-DESIGN_SRC="L4.sv"
+DESIGN_SRC="LN.sv"
 DESIGN_SRC2="L2.sv"
 
 TESTBENCH_VVP="L4_tb.vvp"
