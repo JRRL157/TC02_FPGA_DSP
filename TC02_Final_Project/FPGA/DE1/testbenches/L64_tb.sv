@@ -22,7 +22,7 @@ module L64_testbench();
     int test_count = 0;
     int errors = 0;
 
-    L64 fwht_L64 (
+    LN #(.N(64)) fwht_L64 (
         .clk(clk),
         .rst(rst),
         .x(x),
