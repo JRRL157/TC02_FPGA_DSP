@@ -23,7 +23,7 @@ module L8_tb();
     int errors = 0;
 
     // Instantiate the FWHT module
-    L8 fwht_L8 (
+    LN #(.N(8)) fwht_L8 (
         .clk(clk),
         .rst(1'b0),
         .x(x),
