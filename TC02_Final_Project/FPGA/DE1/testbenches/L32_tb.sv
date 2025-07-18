@@ -66,7 +66,7 @@ module L32_tb();
                              expected_y[24], expected_y[25], expected_y[26], expected_y[27], expected_y[28], expected_y[29], expected_y[30], expected_y[31]) == 32) begin
                     
                     test_count++;
-                    #100;
+                    #(4 * CLK_PERIOD);
 
                     $display("\n--- Test Case %0d ---", test_count);
                     has_error = 0;

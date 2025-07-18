@@ -51,7 +51,7 @@ module L4_tb();
             if ($fscanf(input_file_fd, "%h %h %h %h\n", x[0], x[1], x[2], x[3]) == 4) begin
                 if ($fscanf(output_file_fd, "%h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3]) == 4) begin
                     test_count++;
-                    #100;
+                    #CLK_PERIOD;
                     $display("Actual output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h", y[0], y[1], y[2], y[3]);
                     $display("Expected output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h",expected_y[0], expected_y[1], expected_y[2], expected_y[3]);
 

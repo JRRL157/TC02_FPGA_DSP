@@ -79,7 +79,7 @@ module L128_testbench();
                              expected_y[120], expected_y[121], expected_y[122], expected_y[123], expected_y[124], expected_y[125], expected_y[126], expected_y[127]) == 128) begin
                     
                     test_count++;
-                    #100;
+                    #(6 * CLK_PERIOD);
 
                     $display("\n--- Test Case %0d ---", test_count);
 

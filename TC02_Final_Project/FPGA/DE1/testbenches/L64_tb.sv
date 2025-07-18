@@ -69,7 +69,7 @@ module L64_testbench();
                              expected_y[56], expected_y[57], expected_y[58], expected_y[59], expected_y[60], expected_y[61], expected_y[62], expected_y[63]) == 64) begin
                     
                     test_count++;
-                    #100;
+                    #(5 * CLK_PERIOD);
 
                     $display("\n--- Test Case %0d ---", test_count);
 

@@ -59,7 +59,7 @@ module L16_tb();
                              expected_y[8], expected_y[9], expected_y[10], expected_y[11], expected_y[12], expected_y[13], expected_y[14], expected_y[15]) == 16) begin
                     
                     test_count++;
-                    #100;
+                    #(3 * CLK_PERIOD);
 
                     $display("\n--- Test Case %0d ---", test_count);
                     has_error = 0;

@@ -53,7 +53,7 @@ module L8_tb();
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]) == 8) begin
                     test_count++;
-                    #100;
+                    #(2 * CLK_PERIOD);
                     $display("Actual output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
                     $display("Expected output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]);
 
