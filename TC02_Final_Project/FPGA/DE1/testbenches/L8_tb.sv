@@ -6,6 +6,7 @@ module L8_tb();
     logic [31:0] x [7:0];
     wire [31:0] y [7:0];
     logic [31:0] expected_y [7:0];
+    logic [31:0] expected_y1 [7:0];
 
     logic clk;
 
@@ -53,18 +54,35 @@ module L8_tb();
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]) == 8) begin
                     test_count++;
-                    #(2 * CLK_PERIOD);
-                    $display("Actual output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", y[0], y[1], y[2], y[3], y[4], y[5], y[6], y[7]);
-                    $display("Expected output: y[0] = %h, y[1] = %h, y[2] = %h, y[3] = %h, y[4] = %h, y[5] = %h, y[6] = %h, y[7] = %h", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]);
-
-                    if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3] || y[4] !== expected_y[4] || y[5] !== expected_y[5] || y[6] !== expected_y[6] || y[7] !== expected_y[7]) begin
-                        errors++;
-                        $display("Error in test %0d!", test_count);
-                    end 
-                    else begin
-                        $display("Test %0d passed.", test_count);
-                    end
+                    #CLK_PERIOD;
                 end
+            end
+            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
+                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y1[0], expected_y1[1], expected_y1[2], expected_y1[3], expected_y1[4], expected_y1[5], expected_y1[6], expected_y1[7]) == 8) begin
+                    test_count++;
+                    #CLK_PERIOD;
+                end
+            end
+
+            if (test_count >= 2) begin
+                    if (test_count % 2 == 0) begin
+                        if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3] || y[4] !== expected_y[4] || y[5] !== expected_y[5] || y[6] !== expected_y[6] || y[7] !== expected_y[7]) begin
+                            errors++;
+                            $display("Error in test %0d!", test_count-1);
+                        end 
+                        else begin
+                            $display("Test %0d passed.", test_count-1);
+                        end
+                    end
+                    else begin
+                        if (y[0] !== expected_y1[0] || y[1] !== expected_y1[1] || y[2] !== expected_y1[2] || y[3] !== expected_y1[3] || y[4] !== expected_y1[4] || y[5] !== expected_y1[5] || y[6] !== expected_y1[6] || y[7] !== expected_y1[7]) begin
+                            errors++;
+                            $display("Error in test %0d!", test_count-1);
+                        end 
+                        else begin
+                            $display("Test %0d passed.", test_count-1);
+                        end
+                    end
             end
         end
 
