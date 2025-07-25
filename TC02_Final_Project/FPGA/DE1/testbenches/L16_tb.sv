@@ -1,12 +1,13 @@
 `timescale 1ns/1ps
 
 module L16_tb();
-    logic [31:0] x [15:0];
-    wire [31:0] y [15:0];
+    parameter L = 16;
+    logic [31:0] x [L-1:0];
+    wire [31:0] y [L-1:0];
 
     logic clk;
     logic rst;
-    integer i, j;
+    integer i, j, k;
     reg has_error;
 
     parameter CLK_PERIOD = 10ns;
@@ -20,7 +21,7 @@ module L16_tb();
     int test_count = 0;
     int errors = 0;
 
-    LN #(.N(16)) fwht_L16 (
+    LN #(.N(L)) fwht_L16 (
         .clk(clk),
         .rst(rst),
         .x(x),
@@ -28,8 +29,8 @@ module L16_tb();
     );
 
     parameter LATENCY_IDX = 3;
-    logic [31:0] expected_y_buffer [LATENCY_IDX][15:0];
-    logic [31:0] temp_y [15:0];
+    logic [31:0] expected_y_buffer [LATENCY_IDX][L-1:0];
+    logic [31:0] temp_y [L-1:0];
 
     initial begin
         clk = 0;
@@ -52,7 +53,7 @@ module L16_tb();
             $finish;
         end
 
-        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin            
+        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
             $fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
                     x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15]);
 
@@ -61,25 +62,19 @@ module L16_tb();
                         temp_y[4], temp_y[5], temp_y[6], temp_y[7],
                         temp_y[8], temp_y[9], temp_y[10], temp_y[11],
                         temp_y[12], temp_y[13], temp_y[14], temp_y[15]);
-            
-            for (j = 0; j < 16; j++) begin
-                expected_y_buffer[2][j] = expected_y_buffer[1][j];
-            end
-            
-            for (j = 0; j < 16; j++) begin
-                expected_y_buffer[1][j] = expected_y_buffer[0][j];
-            end
 
-            for (j = 0; j < 16; j++) begin
-                expected_y_buffer[0][j] = temp_y[j];
+            for (k = LATENCY_IDX-1; k >= 0; k--) begin
+                for (j = 0; j < L; j++) begin
+                    expected_y_buffer[k][j] = k == 0 ? temp_y[j] : expected_y_buffer[k-1][j];
+                end
             end
 
             #CLK_PERIOD;
             test_count++;
 
-            if (test_count >= LATENCY_IDX) begin                
+            if (test_count >= LATENCY_IDX) begin
                 has_error = 0;
-                for (i = 0; i < 16; i++) begin                    
+                for (i = 0; i < L; i++) begin
                     if (y[i] !== expected_y_buffer[LATENCY_IDX-1][i]) begin
                         has_error = 1;
                         $display("Error at test %0d, index %0d: Expected %h, got %h", test_count-LATENCY_IDX, i, expected_y_buffer[LATENCY_IDX-1][i], y[i]);
@@ -93,7 +88,7 @@ module L16_tb();
                 else begin
                     $display("Test %0d passed.", test_count-LATENCY_IDX);
                 end
-            end            
+            end
         end
 
         $fclose(input_file_fd);
@@ -102,7 +97,8 @@ module L16_tb();
         $display("\n--- All tests completed ---");
         if (errors == 0) begin
             $display("Success: All %0d tests passed!", test_count);
-        end else begin
+        end
+        else begin
             $display("Failure: %0d out of %0d tests failed.", errors, test_count);
         end
 
