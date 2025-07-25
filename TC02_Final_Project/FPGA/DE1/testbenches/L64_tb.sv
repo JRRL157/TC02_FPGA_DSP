@@ -1,14 +1,13 @@
 `timescale 1ns/1ps
 
 module L64_testbench();
-
-    logic [31:0] x [63:0];
-    wire [31:0] y [63:0];
-    logic [31:0] expected_y[63:0];
+    parameter L = 64;
+    logic [31:0] x [L-1:0];
+    wire [31:0] y [L-1:0];
 
     logic clk;
     logic rst;
-    integer i;
+    integer i, j, k;
     reg has_error;
 
     parameter CLK_PERIOD = 10ns;
@@ -22,16 +21,24 @@ module L64_testbench();
     int test_count = 0;
     int errors = 0;
 
-    LN #(.N(64)) fwht_L64 (
+    LN #(.N(L)) fwht_L64 (
         .clk(clk),
         .rst(rst),
         .x(x),
         .y(y)
     );
     
+    parameter LATENCY_IDX = 5;
+    logic [31:0] expected_y_buffer [LATENCY_IDX][L-1:0];
+    logic [31:0] temp_y [L-1:0];
+
     initial begin
         clk = 0;
-        rst = 1;
+        rst = 1; 
+        #CLK_PERIOD;
+        rst = 0;
+        #CLK_PERIOD;
+        test_count = 0;
 
         input_file_fd = $fopen("../../../HPS/samples/input_samples_64.txt","r");
         if (input_file_fd == 0) begin
@@ -46,10 +53,6 @@ module L64_testbench();
             $finish;
         end
 
-        #(2 * CLK_PERIOD);
-        rst = 0; // De-assert reset
-        #(2 * CLK_PERIOD);
-
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
 
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", 
@@ -59,34 +62,43 @@ module L64_testbench();
                          x[48], x[49], x[50], x[51], x[52], x[53], x[54], x[55], x[56], x[57], x[58], x[59], x[60], x[61], x[62], x[63]) == 64) begin
 
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
-                             expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7],
-                             expected_y[8], expected_y[9], expected_y[10], expected_y[11], expected_y[12], expected_y[13], expected_y[14], expected_y[15],
-                             expected_y[16], expected_y[17], expected_y[18], expected_y[19], expected_y[20], expected_y[21], expected_y[22], expected_y[23],
-                             expected_y[24], expected_y[25], expected_y[26], expected_y[27], expected_y[28], expected_y[29], expected_y[30], expected_y[31],
-                             expected_y[32], expected_y[33], expected_y[34], expected_y[35], expected_y[36], expected_y[37], expected_y[38], expected_y[39],
-                             expected_y[40], expected_y[41], expected_y[42], expected_y[43], expected_y[44], expected_y[45], expected_y[46], expected_y[47],
-                             expected_y[48], expected_y[49], expected_y[50], expected_y[51], expected_y[52], expected_y[53], expected_y[54], expected_y[55],
-                             expected_y[56], expected_y[57], expected_y[58], expected_y[59], expected_y[60], expected_y[61], expected_y[62], expected_y[63]) == 64) begin
+                             temp_y[0], temp_y[1], temp_y[2], temp_y[3], temp_y[4], temp_y[5], temp_y[6], temp_y[7],
+                             temp_y[8], temp_y[9], temp_y[10], temp_y[11], temp_y[12], temp_y[13], temp_y[14], temp_y[15],
+                             temp_y[16], temp_y[17], temp_y[18], temp_y[19], temp_y[20], temp_y[21], temp_y[22], temp_y[23],
+                             temp_y[24], temp_y[25], temp_y[26], temp_y[27], temp_y[28], temp_y[29], temp_y[30], temp_y[31],
+                             temp_y[32], temp_y[33], temp_y[34], temp_y[35], temp_y[36], temp_y[37], temp_y[38], temp_y[39],
+                             temp_y[40], temp_y[41], temp_y[42], temp_y[43], temp_y[44], temp_y[45], temp_y[46], temp_y[47],
+                             temp_y[48], temp_y[49], temp_y[50], temp_y[51], temp_y[52], temp_y[53], temp_y[54], temp_y[55],
+                             temp_y[56], temp_y[57], temp_y[58], temp_y[59], temp_y[60], temp_y[61], temp_y[62], temp_y[63]) == 64) begin
                     
-                    test_count++;
-                    #(5 * CLK_PERIOD);
-
-                    $display("\n--- Test Case %0d ---", test_count);
-
-                    has_error = 0;
-                    for (i = 0; i < 64; i = i + 1) begin
-                        if (y[i] !== expected_y[i]) begin
-                            has_error = 1;
-                            $display("Mismatch at index %0d: Actual = %h, Expected = %h", i, y[i], expected_y[i]);
+                    for (k = LATENCY_IDX-1; k >= 0; k--) begin
+                        for (j = 0; j < L; j++) begin
+                            expected_y_buffer[k][j] = k == 0 ? temp_y[j] : expected_y_buffer[k-1][j];
                         end
                     end
 
-                    if (has_error) begin
-                        errors++;
-                        $display("-> Error in test %0d!", test_count);
-                    end 
-                    else begin
-                        $display("-> Test %0d passed.", test_count);
+                    test_count++;
+                    #CLK_PERIOD;
+
+                    if (test_count >= LATENCY_IDX) begin
+                        $display("\n--- Test Case %0d ---", test_count - LATENCY_IDX);
+
+                        has_error = 0;
+                        for (i = 0; i < L; i++) begin
+                            if (y[i] !== expected_y_buffer[LATENCY_IDX - 1][i]) begin
+                                has_error = 1;
+                                $display("Mismatch at index %0d: Actual = %h, Expected = %h", i, y[i], expected_y_buffer[LATENCY_IDX -1][i]);
+                            end
+                        end
+
+                        if (has_error) begin
+                            errors++;
+                            $display("-> Error in test %0d!", test_count - LATENCY_IDX);
+                        end 
+                        else begin
+                            $display("-> Test %0d passed.", test_count - LATENCY_IDX);
+                        end
+
                     end
                 end
             end
@@ -97,9 +109,9 @@ module L64_testbench();
 
         $display("\n--- All tests completed ---");
         if (errors == 0) begin
-            $display("Success: All %0d tests passed!", test_count);
+            $display("Success: All %0d tests passed!", test_count - LATENCY_IDX);
         end else begin
-            $display("Failure: %0d out of %0d tests failed.", errors, test_count);
+            $display("Failure: %0d out of %0d tests failed.", errors, test_count - LATENCY_IDX);
         end
 
         $finish;
