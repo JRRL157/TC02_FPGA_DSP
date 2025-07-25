@@ -1,14 +1,13 @@
 `timescale 1ns/1ps
 
 module L32_tb();
-
-    logic [31:0] x [31:0];
-    wire [31:0] y [31:0];
-    logic [31:0] expected_y [31:0];
+    parameter L = 32;
+    logic [31:0] x [L-1:0];
+    wire [31:0] y [L-1:0];
 
     logic clk;
     logic rst;
-    integer i;
+    integer i,j,k;
     reg has_error;
 
     parameter CLK_PERIOD = 10ns; // 10ns period -> 100 MHz clock
@@ -22,17 +21,24 @@ module L32_tb();
     int test_count = 0;
     int errors = 0;
 
-    // Instantiate the L32 module
-    LN #(.N(32)) fwht_L32 (
+    LN #(.N(L)) fwht_L32 (
         .clk(clk),
         .rst(rst),
         .x(x),
         .y(y)
     );
 
+    parameter LATENCY_IDX = 4;
+    logic [31:0] expected_y_buffer [LATENCY_IDX][L-1:0];
+    logic [31:0] temp_y [L-1:0];
+
     initial begin
         clk = 0;
-        rst = 1; // Assert reset
+        rst = 1; 
+        #CLK_PERIOD;
+        rst = 0;
+        #CLK_PERIOD;
+        test_count = 0;
 
         input_file_fd = $fopen("../../../HPS/samples/input_samples_32.txt","r");
         if (input_file_fd == 0) begin
@@ -47,11 +53,6 @@ module L32_tb();
             $finish;
         end
 
-        // Apply reset for a few cycles
-        #(2 * CLK_PERIOD);
-        rst = 0; // De-assert reset
-        #(2 * CLK_PERIOD);
-
         // --- Test Loop ---
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
 
@@ -60,42 +61,51 @@ module L32_tb();
                          x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31]) == 32) begin
 
                 if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
-                             expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7],
-                             expected_y[8], expected_y[9], expected_y[10], expected_y[11], expected_y[12], expected_y[13], expected_y[14], expected_y[15],
-                             expected_y[16], expected_y[17], expected_y[18], expected_y[19], expected_y[20], expected_y[21], expected_y[22], expected_y[23],
-                             expected_y[24], expected_y[25], expected_y[26], expected_y[27], expected_y[28], expected_y[29], expected_y[30], expected_y[31]) == 32) begin
-                    
-                    test_count++;
-                    #(4 * CLK_PERIOD);
+                             temp_y[0], temp_y[1], temp_y[2], temp_y[3], temp_y[4], temp_y[5], temp_y[6], temp_y[7],
+                             temp_y[8], temp_y[9], temp_y[10], temp_y[11], temp_y[12], temp_y[13], temp_y[14], temp_y[15],
+                             temp_y[16], temp_y[17], temp_y[18], temp_y[19], temp_y[20], temp_y[21], temp_y[22], temp_y[23],
+                             temp_y[24], temp_y[25], temp_y[26], temp_y[27], temp_y[28], temp_y[29], temp_y[30], temp_y[31]) == 32) begin
 
-                    $display("\n--- Test Case %0d ---", test_count);
-                    has_error = 0;
-                    for (i = 0; i < 32; i++) begin
-                        if (y[i] !== expected_y[i]) begin
-                            has_error = 1;
-                            $display("Mismatch at y[%0d]: Expected %h, got %h", i, expected_y[i], y[i]);
+                    for (k = LATENCY_IDX-1; k >= 0; k--) begin
+                        for (j = 0; j < L; j++) begin
+                            expected_y_buffer[k][j] = k == 0 ? temp_y[j] : expected_y_buffer[k-1][j];
                         end
                     end
 
-                    // Check for errors
-                    if (has_error) begin
-                        errors++;
-                        $display("-> Error in test %0d!", test_count);
-                    end else begin
-                        $display("-> Test %0d passed.", test_count);
+                    test_count++;
+                    #CLK_PERIOD;
+
+                    if (test_count >= LATENCY_IDX) begin
+                        has_error = 0;
+                        for (i = 0; i < L; i++) begin
+                            if (y[i] !== expected_y_buffer[LATENCY_IDX-1][i]) begin
+                                has_error = 1;
+                                $display("Error at test %0d, index %0d: Expected %h, got %h", test_count-LATENCY_IDX, i, expected_y_buffer[LATENCY_IDX-1][i], y[i]);
+                            end
+                        end
+
+                        if (has_error) begin
+                            errors++;
+                            $display("Error in test %0d!", test_count-LATENCY_IDX);
+                        end
+                        else begin
+                            $display("Test %0d passed.", test_count-LATENCY_IDX);
+                        end
                     end
+
                 end
+
             end
         end
 
-        // --- Simulation Summary ---
         $fclose(input_file_fd);
         $fclose(output_file_fd);
 
         $display("\n--- All tests completed ---");
         if (errors == 0) begin
             $display("Success: All %0d tests passed!", test_count);
-        end else begin
+        end
+        else begin
             $display("Failure: %0d out of %0d tests failed.", errors, test_count);
         end
 
