@@ -3,13 +3,10 @@
 module L16_tb();
     logic [31:0] x [15:0];
     wire [31:0] y [15:0];
-    logic [31:0] expected_y [15:0];
-    logic [31:0] expected_y1 [15:0];
-    logic [31:0] expected_y2 [15:0];
 
     logic clk;
     logic rst;
-    integer i;
+    integer i, j;
     reg has_error;
 
     parameter CLK_PERIOD = 10ns;
@@ -29,10 +26,18 @@ module L16_tb();
         .x(x),
         .y(y)
     );
-    
+
+    parameter LATENCY_IDX = 3;
+    logic [31:0] expected_y_buffer [LATENCY_IDX][15:0];
+    logic [31:0] temp_y [15:0];
+
     initial begin
         clk = 0;
-        rst = 1;
+        rst = 1; 
+        #CLK_PERIOD;
+        rst = 0;
+        #CLK_PERIOD;
+        test_count = 0;
 
         input_file_fd = $fopen("../../../HPS/samples/input_samples_16.txt","r");
         if (input_file_fd == 0) begin
@@ -47,63 +52,50 @@ module L16_tb();
             $finish;
         end
 
-        #(2 * CLK_PERIOD);
-        rst = 0;
-        #(2 * CLK_PERIOD);
+        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin            
+            $fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
+                    x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15]);
 
-        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
-
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]) == 8) begin
-                    test_count++;
-                    #CLK_PERIOD;
-                end
+            $fscanf(output_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
+                        temp_y[0], temp_y[1], temp_y[2], temp_y[3],
+                        temp_y[4], temp_y[5], temp_y[6], temp_y[7],
+                        temp_y[8], temp_y[9], temp_y[10], temp_y[11],
+                        temp_y[12], temp_y[13], temp_y[14], temp_y[15]);
+            
+            for (j = 0; j < 16; j++) begin
+                expected_y_buffer[2][j] = expected_y_buffer[1][j];
             end
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y1[0], expected_y1[1], expected_y1[2], expected_y1[3], expected_y1[4], expected_y1[5], expected_y1[6], expected_y1[7]) == 8) begin
-                    test_count++;
-                    #CLK_PERIOD;
-                end
-            end
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y2[0], expected_y2[1], expected_y2[2], expected_y2[3], expected_y2[4], expected_y2[5], expected_y2[6], expected_y2[7]) == 8) begin
-                    test_count++;
-                    #CLK_PERIOD;
-                end
+            
+            for (j = 0; j < 16; j++) begin
+                expected_y_buffer[1][j] = expected_y_buffer[0][j];
             end
 
-            if (test_count >= 3) begin
-                    if (test_count % 3 == 0) begin
-                        if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3] || y[4] !== expected_y[4] || y[5] !== expected_y[5] || y[6] !== expected_y[6] || y[7] !== expected_y[7]) begin
-                            errors++;
-                            $display("Error in test %0d!", test_count-2);
-                        end 
-                        else begin
-                            $display("Test %0d passed.", test_count-2);
-                        end
-                    end
-                    else if (test_count % 3 == 1) begin
-                        if (y[0] !== expected_y1[0] || y[1] !== expected_y1[1] || y[2] !== expected_y1[2] || y[3] !== expected_y1[3] || y[4] !== expected_y1[4] || y[5] !== expected_y1[5] || y[6] !== expected_y1[6] || y[7] !== expected_y1[7]) begin
-                            errors++;
-                            $display("Error in test %0d!", test_count-1);
-                        end 
-                        else begin
-                            $display("Test %0d passed.", test_count-1);
-                        end
-                    end
-                    else if (test_count % 3 == 2) begin
-                        if (y[0] !== expected_y2[0] || y[1] !== expected_y2[1] || y[2] !== expected_y2[2] || y[3] !== expected_y2[3] || y[4] !== expected_y2[4] || y[5] !== expected_y2[5] || y[6] !== expected_y2[6] || y[7] !== expected_y2[7]) begin
-                            errors++;
-                            $display("Error in test %0d!", test_count);
-                        end 
-                        else begin
-                            $display("Test %0d passed.", test_count);
-                        end
-                    end
+            for (j = 0; j < 16; j++) begin
+                expected_y_buffer[0][j] = temp_y[j];
             end
+
+            #CLK_PERIOD;
+            test_count++;
+
+            if (test_count >= LATENCY_IDX) begin                
+                has_error = 0;
+                for (i = 0; i < 16; i++) begin                    
+                    if (y[i] !== expected_y_buffer[LATENCY_IDX-1][i]) begin
+                        has_error = 1;
+                        $display("Error at test %0d, index %0d: Expected %h, got %h", test_count-LATENCY_IDX, i, expected_y_buffer[LATENCY_IDX-1][i], y[i]);
+                    end
+                end
+
+                if (has_error) begin
+                    errors++;
+                    $display("Error in test %0d!", test_count-LATENCY_IDX);
+                end
+                else begin
+                    $display("Test %0d passed.", test_count-LATENCY_IDX);
+                end
+            end            
         end
 
-        // --- Simulation Summary ---
         $fclose(input_file_fd);
         $fclose(output_file_fd);
 

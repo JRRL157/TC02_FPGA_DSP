@@ -1,38 +1,43 @@
 `timescale 1ns/1ps
 
-module L8_tb();
-
-    // Testbench signals
+module L8_tb();    
     logic [31:0] x [7:0];
     wire [31:0] y [7:0];
-    logic [31:0] expected_y [7:0];
-    logic [31:0] expected_y1 [7:0];
 
     logic clk;
+    logic rst;
+    integer i, j;
+    reg has_error;
 
     parameter CLK_PERIOD = 10ns; // 10ns period means 100 MHz clock (1 / 10ns = 100 MHz)
     parameter CLK_HALF_PERIOD = CLK_PERIOD / 2;
 
     always #CLK_HALF_PERIOD clk = ~clk;
 
-    // File descriptors
     integer input_file_fd;
     integer output_file_fd;
 
-    // Contador de testes
     int test_count = 0;
     int errors = 0;
 
-    // Instantiate the FWHT module
     LN #(.N(8)) fwht_L8 (
         .clk(clk),
-        .rst(1'b0),
+        .rst(rst),
         .x(x),
         .y(y)
     );
 
+    parameter LATENCY_IDX = 2;
+    logic [31:0] expected_y_buffer [LATENCY_IDX][7:0];
+    logic [31:0] temp_y [7:0];
+
     initial begin
         clk = 0;
+        rst = 1; 
+        #CLK_PERIOD;
+        rst = 0;
+        #CLK_PERIOD;
+        test_count = 0;
 
         input_file_fd = $fopen("../../../HPS/samples/input_samples_8.txt","r");
 
@@ -49,40 +54,37 @@ module L8_tb();
             $finish;
         end
 
-        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
-
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y[0], expected_y[1], expected_y[2], expected_y[3], expected_y[4], expected_y[5], expected_y[6], expected_y[7]) == 8) begin
-                    test_count++;
-                    #CLK_PERIOD;
-                end
+        while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin            
+            $fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]);
+            $fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", temp_y[0], temp_y[1], temp_y[2], temp_y[3], temp_y[4], temp_y[5], temp_y[6], temp_y[7]);            
+            
+            for (j = 0; j < 8; j++) begin
+                expected_y_buffer[1][j] = expected_y_buffer[0][j];
             end
-            if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h\n", x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]) == 8) begin
-                if ($fscanf(output_file_fd, "%h %h %h %h %h %h %h %h\n", expected_y1[0], expected_y1[1], expected_y1[2], expected_y1[3], expected_y1[4], expected_y1[5], expected_y1[6], expected_y1[7]) == 8) begin
-                    test_count++;
-                    #CLK_PERIOD;
-                end
+            
+            for (j = 0; j < 8; j++) begin
+                expected_y_buffer[0][j] = temp_y[j];
             end
 
-            if (test_count >= 2) begin
-                    if (test_count % 2 == 0) begin
-                        if (y[0] !== expected_y[0] || y[1] !== expected_y[1] || y[2] !== expected_y[2] || y[3] !== expected_y[3] || y[4] !== expected_y[4] || y[5] !== expected_y[5] || y[6] !== expected_y[6] || y[7] !== expected_y[7]) begin
-                            errors++;
-                            $display("Error in test %0d!", test_count-1);
-                        end 
-                        else begin
-                            $display("Test %0d passed.", test_count-1);
-                        end
+            #CLK_PERIOD;
+            test_count++;
+
+            if (test_count >= LATENCY_IDX) begin
+                has_error = 0;
+                for (i = 0; i < 8; i++) begin                    
+                    if (y[i] !== expected_y_buffer[LATENCY_IDX-1][i]) begin
+                        has_error = 1;
+                        $display("Error at test %0d, index %0d: Expected %h, got %h", test_count-LATENCY_IDX, i, expected_y_buffer[1][i], y[i]);
                     end
-                    else begin
-                        if (y[0] !== expected_y1[0] || y[1] !== expected_y1[1] || y[2] !== expected_y1[2] || y[3] !== expected_y1[3] || y[4] !== expected_y1[4] || y[5] !== expected_y1[5] || y[6] !== expected_y1[6] || y[7] !== expected_y1[7]) begin
-                            errors++;
-                            $display("Error in test %0d!", test_count-1);
-                        end 
-                        else begin
-                            $display("Test %0d passed.", test_count-1);
-                        end
-                    end
+                end
+
+                if (has_error) begin
+                    errors++;
+                    $display("Error in test %0d!", test_count-LATENCY_IDX);
+                end
+                else begin
+                    $display("Test %0d passed.", test_count-LATENCY_IDX);
+                end
             end
         end
 
