@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 module L128_testbench();
-    logic [31:0] x [127:0];
-    wire [31:0] y [127:0];
-    logic [31:0] expected_y [127:0];
+    parameter L = 128;
+    logic [31:0] x [L-1:0];
+    wire [31:0] y [L-1:0];
 
     logic clk;
     logic rst;
@@ -21,16 +21,24 @@ module L128_testbench();
     int test_count = 0;
     int errors = 0;
 
-    LN #(.N(128)) fwht_L128 (
+    LN #(.N(L)) fwht_L128 (
         .clk(clk),
         .rst(rst),
         .x(x),
         .y(y)
     );
 
+    parameter LATENCY_IDX = 5;
+    logic [31:0] expected_y_buffer [LATENCY_IDX][L-1:0];
+    logic [31:0] temp_y [L-1: 0];
+
     initial begin
         clk = 0;
-        rst = 1;
+        rst = 1; 
+        #CLK_PERIOD;
+        rst = 0;
+        #CLK_PERIOD;
+        test_count = 0;
 
         input_file_fd = $fopen("../../../HPS/samples/input_samples_128.txt","r");
         if (input_file_fd == 0) begin
@@ -45,12 +53,7 @@ module L128_testbench();
             $finish;
         end
 
-        #(2 * CLK_PERIOD);
-        rst = 0;
-        #(2 * CLK_PERIOD);
-
         while (!$feof(input_file_fd) && !$feof(output_file_fd)) begin
-
             if ($fscanf(input_file_fd, "%h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", 
                          x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12], x[13], x[14], x[15],
                          x[16], x[17], x[18], x[19], x[20], x[21], x[22], x[23], x[24], x[25], x[26], x[27], x[28], x[29], x[30], x[31],
@@ -78,25 +81,33 @@ module L128_testbench();
                              expected_y[112], expected_y[113], expected_y[114], expected_y[115], expected_y[116], expected_y[117], expected_y[118], expected_y[119],
                              expected_y[120], expected_y[121], expected_y[122], expected_y[123], expected_y[124], expected_y[125], expected_y[126], expected_y[127]) == 128) begin
                     
-                    test_count++;
-                    #(6 * CLK_PERIOD);
-
-                    $display("\n--- Test Case %0d ---", test_count);
-
-                    has_error = 0;
-                    for (i = 0; i < 128; i = i + 1) begin
-                        if (y[i] !== expected_y[i]) begin
-                            has_error = 1;
-                            $display("Mismatch at index %0d: Actual = %h, Expected = %h", i, y[i], expected_y[i]);
+                    for (k = LATENCY_IDX; k >= 0; k--) begin
+                        for (j = 0; j < L; j++) begin
+                            expected_y_buffer[k][j] = k == 0 ? temp_y[j] : expected_y_buffer[k-1][j];
                         end
                     end
 
-                    if (has_error) begin
-                        errors++;
-                        $display("-> Error in test %0d!", test_count);
-                    end 
-                    else begin
-                        $display("-> Test %0d passed.", test_count);
+                    test_count++;
+                    #CLK_PERIOD;
+
+                    $display("\n--- Test Case %0d ---", test_count);
+
+                    if (test_count >= LATENCY_IDX) begin
+                        has_error = 0;
+                        for (i = 0; i < L; i = i + 1) begin
+                            if (y[i] !== expected_y[i]) begin
+                                has_error = 1;
+                                $display("Error at test %0d, index %0d: Expected %h, got %h", test_count-LATENCY_IDX, i, expected_y_buffer[LATENCY_IDX-1][i], y[i]);
+                            end
+                        end
+
+                        if (has_error) begin
+                            errors++;
+                            $display("-> Error in test %0d!", test_count - LATENCY_IDX);
+                        end 
+                        else begin
+                            $display("-> Test %0d passed.", test_count - LATENCY_IDX);
+                        end
                     end
                 end
             end
@@ -107,9 +118,9 @@ module L128_testbench();
 
         $display("\n--- All tests completed ---");
         if (errors == 0) begin
-            $display("Success: All %0d tests passed!", test_count);
+            $display("Success: All %0d tests passed!", test_count - LATENCY_IDX);
         end else begin
-            $display("Failure: %0d out of %0d tests failed.", errors, test_count);
+            $display("Failure: %0d out of %0d tests failed.", errors, test_count - LATENCY_IDX);
         end
 
         $finish;
