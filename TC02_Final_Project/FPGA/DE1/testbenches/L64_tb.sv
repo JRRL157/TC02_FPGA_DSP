@@ -27,14 +27,14 @@ module L64_testbench();
         .x(x),
         .y(y)
     );
-    
+
     parameter LATENCY_IDX = 5;
     logic [31:0] expected_y_buffer [LATENCY_IDX][L-1:0];
     logic [31:0] temp_y [L-1:0];
 
     initial begin
         clk = 0;
-        rst = 1; 
+        rst = 1;
         #CLK_PERIOD;
         rst = 0;
         #CLK_PERIOD;
@@ -70,7 +70,7 @@ module L64_testbench();
                              temp_y[40], temp_y[41], temp_y[42], temp_y[43], temp_y[44], temp_y[45], temp_y[46], temp_y[47],
                              temp_y[48], temp_y[49], temp_y[50], temp_y[51], temp_y[52], temp_y[53], temp_y[54], temp_y[55],
                              temp_y[56], temp_y[57], temp_y[58], temp_y[59], temp_y[60], temp_y[61], temp_y[62], temp_y[63]) == 64) begin
-                    
+
                     for (k = LATENCY_IDX-1; k >= 0; k--) begin
                         for (j = 0; j < L; j++) begin
                             expected_y_buffer[k][j] = k == 0 ? temp_y[j] : expected_y_buffer[k-1][j];
