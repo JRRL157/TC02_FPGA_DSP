@@ -103,10 +103,10 @@ module L32_tb();
 
         $display("\n--- All tests completed ---");
         if (errors == 0) begin
-            $display("Success: All %0d tests passed!", test_count);
+            $display("Success: All %0d tests passed!", test_count - LATENCY_IDX);
         end
         else begin
-            $display("Failure: %0d out of %0d tests failed.", errors, test_count);
+            $display("Failure: %0d out of %0d tests failed.", errors, test_count - LATENCY_IDX);
         end
 
         $finish;
