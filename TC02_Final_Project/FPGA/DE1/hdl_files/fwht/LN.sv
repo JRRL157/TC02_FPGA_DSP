@@ -34,7 +34,7 @@ module LN #(parameter N=8)(
         end
     endgenerate
 
-    generate    
+    generate
         if (N == 4) begin
             L2 l2_upper(
                 .x(a_upper),
